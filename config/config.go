@@ -2,37 +2,54 @@ package config
 
 import (
 	"fmt"
+	"slices"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
 
+var mods = []string{"dev", "prod"}
+
+type PostgresConfig struct {
+	Host               string `mapstructure:"host" validate:"required,hostname|ip"`
+	Port               int    `mapstructure:"port" validate:"required,min=1,max=65535"`
+	User               string `mapstructure:"user" validate:"required"`
+	Password           string `mapstructure:"password" validate:"required"`
+	DBName             string `mapstructure:"dbname" validate:"required"`
+	SSLMode            string `mapstructure:"sslmode" validate:"required,oneof=disable require verify-ca verify-full"`
+	MaxOpenConns       int    `mapstructure:"max_open_conns" validate:"required,min=1"`
+	MaxIdleConns       int    `mapstructure:"max_idle_conns" validate:"required,min=0"`
+	ConnMaxLifetimeMin int    `mapstructure:"conn_max_lifetime_minutes" validate:"required,min=1"`
+	ConnMaxIdleTimeMin int    `mapstructure:"conn_max_idle_time_minutes" validate:"required,min=0"`
+}
+
 type Config struct {
-	Test string `mapstructure:"TEST"`
+	Postgres PostgresConfig `mapstructure:"postgres"`
 }
 
-func (c Config) Validate() error {
-	return nil
-}
-
-func Load() (Config, error) {
+func Load(mod string) (Config, error) {
 	var config Config
 
+	if !slices.Contains(mods, mod) {
+		return config, fmt.Errorf("unsupported mode: %s", mod)
+	}
+
 	viper.AddConfigPath(".")
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	viper.SetConfigName(mod)
+	viper.SetConfigType("yaml")
 
 	err := viper.ReadInConfig()
 	if err != nil {
 		return config, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	err = viper.UnmarshalExact(&config)
+	err = viper.Unmarshal(&config)
 	if err != nil {
 		return config, fmt.Errorf("failed to unmarshal config file: %w", err)
 	}
 
-	if err := config.Validate(); err != nil {
-		return config, fmt.Errorf("failed to validate config: %w", err)
+	if err := validator.New().Struct(&config); err != nil {
+		return config, fmt.Errorf("failed to validate config file: %w", err)
 	}
 
 	return config, nil
