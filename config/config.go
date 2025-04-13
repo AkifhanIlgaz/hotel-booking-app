@@ -27,12 +27,10 @@ type TokenConfig struct {
 	AccessTokenPrivateKeyPath string `mapstructure:"access_token_private_key_path" validate:"required"`
 	AccessTokenPublicKeyPath  string `mapstructure:"access_token_public_key_path" validate:"required"`
 	AccessTokenExpiresIn      int    `mapstructure:"access_token_expires_in" validate:"required"` // minutes
-	AccessTokenMaxAge         int    `mapstructure:"access_token_max_age" validate:"required"`    // minutes
 
 	RefreshTokenPrivateKeyPath string `mapstructure:"refresh_token_private_key_path" validate:"required"`
 	RefreshTokenPublicKeyPath  string `mapstructure:"refresh_token_public_key_path" validate:"required"`
 	RefreshTokenExpiresIn      int    `mapstructure:"refresh_token_expires_in" validate:"required"` // days
-	RefreshTokenMaxAge         int    `mapstructure:"refresh_token_max_age" validate:"required"`    // days
 }
 
 type Config struct {
