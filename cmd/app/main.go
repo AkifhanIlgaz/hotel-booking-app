@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
+	"github.com/AkifhanIlgaz/hotel-booking-app/migrations"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/db"
 	_ "github.com/lib/pq"
 )
@@ -28,5 +29,9 @@ func main() {
 
 	defer db.Close()
 
-	
+	err = migrations.Init(db)
+	if err != nil {
+		log.Fatalf("failed to seed databases: %v", err)
+	}
+
 }
