@@ -7,17 +7,20 @@ import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/errors"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/messages"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
 type UserHandler struct {
-	userService *services.UserService
+	userService  *services.UserService
+	tokenManager *token.Manager
 }
 
-func NewUserHandler(userService *services.UserService) *UserHandler {
+func NewUserHandler(userService *services.UserService, tokenManager *token.Manager) *UserHandler {
 	return &UserHandler{
-		userService: userService,
+		userService:  userService,
+		tokenManager: tokenManager,
 	}
 }
 

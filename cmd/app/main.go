@@ -10,6 +10,7 @@ import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/db"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -37,10 +38,15 @@ func main() {
 		log.Fatalf("failed to seed databases: %v", err)
 	}
 
+	tokenManager, err := token.NewTokenManager(&cfg.Token)
+	if err != nil {
+		log.Fatalf("failed to create token manager: %v", err)
+	}
+
 	router := gin.Default()
 
 	userService := services.NewUserService(db)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, tokenManager)
 
 	router.GET("/", userHandler.Register)
 
