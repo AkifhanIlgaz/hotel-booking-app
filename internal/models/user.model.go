@@ -35,7 +35,7 @@ type User struct {
 
 // TODO: request'i düzenlemek için method yaz Trimspace lower
 type RegistrationRequest struct {
-	Name     string `json:"name" validate:"required,min=3,max=50"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
+	Name     string `json:"name" binding:"required,min=3,max=50"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
 }
