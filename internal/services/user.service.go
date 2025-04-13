@@ -7,8 +7,11 @@ import (
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/queries"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/errors"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/utils"
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 )
 
 type UserService struct {
@@ -30,7 +33,6 @@ func (us UserService) RegisterUser(registrationReq models.RegistrationRequest) (
 
 	id := uuid.New()
 
-	// TODO: Error handling
 	if _, err := us.db.Exec(queries.InsertUser,
 		id,
 		registrationReq.Name,
@@ -38,6 +40,12 @@ func (us UserService) RegisterUser(registrationReq models.RegistrationRequest) (
 		hashedPassword,
 		models.RoleUser,
 		time.Now()); err != nil {
+		var pgError *pgconn.PgError
+		if errors.As(err, &pgError) {
+			if pgError.Code == pgerrcode.UniqueViolation {
+				return uuid.Nil, errors.ErrEmailTaken
+			}
+		}
 		return uuid.Nil, fmt.Errorf("register user: %w", err)
 	}
 
