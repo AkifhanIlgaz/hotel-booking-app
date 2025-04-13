@@ -2,12 +2,12 @@ package services
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/queries"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/errors"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -43,7 +43,7 @@ func (us UserService) RegisterUser(registrationReq models.RegistrationRequest) (
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) {
 			if pgError.Code == pgerrcode.UniqueViolation {
-				return uuid.Nil, errors.New("This email address is already registered.")
+				return uuid.Nil, errors.ErrEmailTaken
 			}
 		}
 		return uuid.Nil, fmt.Errorf("register user: %w", err)
