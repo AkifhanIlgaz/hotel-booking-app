@@ -29,17 +29,20 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
 		if errors.As(err, &validationErrors) {
-			out := make([]messages.ErrorMessage, len(validationErrors))
-			for i, fe := range validationErrors {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
 				var params []string
 				switch fe.Tag() {
 				case "min", "max":
 					params = []string{fe.Param()}
 				}
-				out[i] = messages.ErrorMessage{Field: fe.Field(), Message: messages.MessageForTag(fe.Tag(), params...)}
+				msg := messages.ErrorMessage{
+					Field:   fe.Field(),
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				ctx.JSON(http.StatusBadRequest, gin.H{"error": msg})
+				return
 			}
-			ctx.JSON(http.StatusBadRequest, gin.H{"errors": out})
-			return
 		}
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": messages.InvalidJSONOrMissingFields})
 		return
