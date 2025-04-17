@@ -61,9 +61,27 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	_ = id
+	accessToken, err := uh.tokenManager.GenerateAccessToken(id.String(), "user")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": messages.SomethingWentWrong})
+		return
+	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Kayıt başarılı!"})
+	// TODO: Better error handling
+	refreshToken, err := uh.tokenManager.GenerateRefreshToken(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": messages.SomethingWentWrong})
+		return
+	}
 
-	// TODO: Generate jwt tokens and return to user
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"error":   nil,
+		"message": "User registered successfully",
+		"payload": gin.H{
+			"access_token":  accessToken,
+			"refresh_token": refreshToken,
+		},
+	})
+
 }
