@@ -8,7 +8,7 @@ import (
 )
 
 func Init(db *sql.DB) error {
-	err := createUsersTable(db)
+	err := createTables(db, schemas.All()...)
 	if err != nil {
 		return fmt.Errorf("failed to migrate: %w", err)
 	}
@@ -16,12 +16,15 @@ func Init(db *sql.DB) error {
 	return nil
 }
 
-func createUsersTable(db *sql.DB) error {
-	_, err := db.Exec(schemas.Users)
-	if err != nil {
-		return fmt.Errorf("failed to create users table: %w", err)
+func createTables(db *sql.DB, tables ...string) error {
+	for _, table := range tables {
+		_, err := db.Exec(table)
+		if err != nil {
+			return fmt.Errorf("failed to create table: %w", err)
+		}
+		// ? Should I check rowsAffected ?
 	}
 
-	// ? Should I check rowsAffected ?
 	return nil
+
 }

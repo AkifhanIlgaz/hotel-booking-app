@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("failed to seed databases: %v", err)
 	}
 
-	tokenManager, err := token.NewTokenManager(&cfg.Token)
+	tokenManager, err := token.NewTokenManager(db, &cfg.Token)
 	if err != nil {
 		log.Fatalf("failed to create token manager: %v", err)
 	}

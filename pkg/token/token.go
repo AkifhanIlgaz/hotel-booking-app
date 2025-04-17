@@ -3,6 +3,7 @@ package token
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"database/sql"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -10,17 +11,18 @@ import (
 	"time"
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
+	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/queries"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type Manager struct {
+	db                    *sql.DB
 	AccessTokenPrivateKey *rsa.PrivateKey
 	AccessTokenPublicKey  *rsa.PublicKey
 	AccessTokenExpiresIn  time.Duration
-
-	RefreshTokenPrivateKey *rsa.PrivateKey
-	RefreshTokenPublicKey  *rsa.PublicKey
-	RefreshTokenExpiresIn  time.Duration
+	RefreshTokenExpiresIn time.Duration
 }
 
 type CustomClaims struct {
@@ -28,32 +30,23 @@ type CustomClaims struct {
 	Role string `json:"role"`
 }
 
-func NewTokenManager(tokenConfig *config.TokenConfig) (*Manager, error) {
-	var tokenManager Manager
+func NewTokenManager(db *sql.DB, tokenConfig *config.TokenConfig) (*Manager, error) {
+	tokenManager := Manager{
+		db: db,
+	}
 	var err error
 
-	tokenManager.AccessTokenPrivateKey, err = loadPrivateKey(tokenConfig.AccessTokenPrivateKeyPath)
+	tokenManager.AccessTokenPrivateKey, err = loadPrivateKey(tokenConfig.PrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create token manager: %w", err)
 	}
 
-	tokenManager.AccessTokenPublicKey, err = loadPublicKey(tokenConfig.AccessTokenPublicKeyPath)
+	tokenManager.AccessTokenPublicKey, err = loadPublicKey(tokenConfig.PublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create token manager: %w", err)
 	}
 
 	tokenManager.AccessTokenExpiresIn = time.Duration(tokenConfig.AccessTokenExpiresIn) * time.Minute
-
-	tokenManager.RefreshTokenPrivateKey, err = loadPrivateKey(tokenConfig.RefreshTokenPrivateKeyPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create token manager: %w", err)
-	}
-
-	tokenManager.RefreshTokenPublicKey, err = loadPublicKey(tokenConfig.RefreshTokenPublicKeyPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create token manager: %w", err)
-	}
-
 	tokenManager.RefreshTokenExpiresIn = time.Duration(tokenConfig.RefreshTokenExpiresIn) * time.Hour * 24
 
 	return &tokenManager, nil
@@ -125,70 +118,27 @@ func (m *Manager) ParseAccessToken(accessToken string) (*CustomClaims, error) {
 	return claims, nil
 }
 
-func (m *Manager) GenerateRefreshToken(userId, role string) (string, error) {
+func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
+	token, err := utils.RandString(32)
+	if err != nil {
+		return "", fmt.Errorf("error generating refresh token: %w", err)
+	}
+
+	id := uuid.New()
 	now := time.Now()
+	expiry := now.Add(m.RefreshTokenExpiresIn * 24 * time.Hour)
 
-	claims := CustomClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(m.RefreshTokenExpiresIn)),
-			NotBefore: jwt.NewNumericDate(now),
-			IssuedAt:  jwt.NewNumericDate(now),
-			Subject:   userId,
-		},
-		Role: role,
+	if _, err := m.db.Exec(queries.InsertRefreshToken,
+		id,
+		uid,
+		utils.HashRefreshToken(token),
+		now,
+		expiry,
+	); err != nil {
+		return "", fmt.Errorf("generate refresh token: %w", err)
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-
-	signedToken, err := token.SignedString(m.RefreshTokenPrivateKey)
-	if err != nil {
-		return "", fmt.Errorf("error signing access token: %w", err)
-	}
-
-	return signedToken, nil
-}
-
-func (m *Manager) ParseRefreshToken(refreshToken string) (*CustomClaims, error) {
-	token, err := jwt.ParseWithClaims(
-		refreshToken,
-		&CustomClaims{},
-		func(token *jwt.Token) (interface{}, error) {
-			// Verify that the signing algorithm is what we expect
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-
-			// Return the public key for verification
-			return m.RefreshTokenPublicKey, nil
-		},
-		// Additional validation options
-		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}),
-		jwt.WithExpirationRequired(),
-		jwt.WithIssuedAt(),
-	)
-	if err != nil {
-		switch {
-		case errors.Is(err, jwt.ErrTokenExpired):
-			return nil, fmt.Errorf("token expired: %w", err)
-		case errors.Is(err, jwt.ErrTokenNotValidYet):
-			return nil, fmt.Errorf("token not valid yet: %w", err)
-		default:
-			return nil, fmt.Errorf("invalid token: %w", err)
-		}
-	}
-
-	// Verify token is valid and extract claims
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	// Type assert the claims
-	claims, ok := token.Claims.(*CustomClaims)
-	if !ok {
-		return nil, fmt.Errorf("invalid token claims")
-	}
-
-	return claims, nil
+	return token, nil
 }
 
 func loadPrivateKey(path string) (*rsa.PrivateKey, error) {
