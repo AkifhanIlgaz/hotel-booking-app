@@ -19,10 +19,10 @@ import (
 
 type Manager struct {
 	db                    *sql.DB
-	AccessTokenPrivateKey *rsa.PrivateKey
-	AccessTokenPublicKey  *rsa.PublicKey
-	AccessTokenExpiresIn  time.Duration
-	RefreshTokenExpiresIn time.Duration
+	accessTokenPrivateKey *rsa.PrivateKey
+	accessTokenPublicKey  *rsa.PublicKey
+	accessTokenExpiresIn  time.Duration
+	refreshTokenExpiresIn time.Duration
 }
 
 type CustomClaims struct {
@@ -36,18 +36,18 @@ func NewTokenManager(db *sql.DB, tokenConfig *config.TokenConfig) (*Manager, err
 	}
 	var err error
 
-	tokenManager.AccessTokenPrivateKey, err = loadPrivateKey(tokenConfig.PrivateKeyPath)
+	tokenManager.accessTokenPrivateKey, err = loadPrivateKey(tokenConfig.PrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create token manager: %w", err)
 	}
 
-	tokenManager.AccessTokenPublicKey, err = loadPublicKey(tokenConfig.PublicKeyPath)
+	tokenManager.accessTokenPublicKey, err = loadPublicKey(tokenConfig.PublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create token manager: %w", err)
 	}
 
-	tokenManager.AccessTokenExpiresIn = time.Duration(tokenConfig.AccessTokenExpiresIn) * time.Minute
-	tokenManager.RefreshTokenExpiresIn = time.Duration(tokenConfig.RefreshTokenExpiresIn) * time.Hour * 24
+	tokenManager.accessTokenExpiresIn = time.Duration(tokenConfig.AccessTokenExpiresIn) * time.Minute
+	tokenManager.refreshTokenExpiresIn = time.Duration(tokenConfig.RefreshTokenExpiresIn) * time.Hour * 24
 
 	return &tokenManager, nil
 }
@@ -57,7 +57,7 @@ func (m *Manager) GenerateAccessToken(userId, role string) (string, error) {
 
 	claims := CustomClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(m.AccessTokenExpiresIn)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(m.accessTokenExpiresIn)),
 			NotBefore: jwt.NewNumericDate(now),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   userId,
@@ -67,7 +67,7 @@ func (m *Manager) GenerateAccessToken(userId, role string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-	signedToken, err := token.SignedString(m.AccessTokenPrivateKey)
+	signedToken, err := token.SignedString(m.accessTokenPrivateKey)
 	if err != nil {
 		return "", fmt.Errorf("error signing access token: %w", err)
 	}
@@ -86,7 +86,7 @@ func (m *Manager) ParseAccessToken(accessToken string) (*CustomClaims, error) {
 			}
 
 			// Return the public key for verification
-			return m.AccessTokenPublicKey, nil
+			return m.accessTokenPublicKey, nil
 		},
 		// Additional validation options
 		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}),
@@ -126,7 +126,7 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 
 	id := uuid.New()
 	now := time.Now()
-	expiry := now.Add(m.RefreshTokenExpiresIn * 24 * time.Hour)
+	expiry := now.Add(m.refreshTokenExpiresIn)
 
 	if _, err := m.db.Exec(queries.InsertRefreshToken,
 		id,

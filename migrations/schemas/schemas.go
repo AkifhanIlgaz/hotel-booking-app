@@ -7,9 +7,9 @@ func All() []string {
 const refreshTokens string = `
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   	id UUID PRIMARY KEY,
-  	user_id UUID NOT NULL REFERENCES users(id),
-  	hashed_token TEXT NOT NULL UNIQUE,
-  	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  	user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+  	token_hash TEXT NOT NULL UNIQUE,
+  	created_at TIMESTAMP NOT NULL,
   	expires_at TIMESTAMP NOT NULL
 );
 `
