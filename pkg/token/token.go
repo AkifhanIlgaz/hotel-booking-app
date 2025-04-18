@@ -119,6 +119,15 @@ func (m *Manager) ParseAccessToken(accessToken string) (*CustomClaims, error) {
 }
 
 func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
+	expired, err := m.isRefreshTokenExpired(uid)
+	if err != nil {
+		return "", fmt.Errorf("error checking refresh token expiry: %w", err)
+	}
+
+	if expired {
+		return "", errors.New("expired token")
+	}
+
 	token, err := utils.RandString(32)
 	if err != nil {
 		return "", fmt.Errorf("error generating refresh token: %w", err)
@@ -128,17 +137,36 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 	now := time.Now()
 	expiry := now.Add(m.refreshTokenExpiresIn)
 
-	if _, err := m.db.Exec(queries.InsertRefreshToken,
-		id,
-		uid,
-		utils.HashRefreshToken(token),
-		now,
-		expiry,
-	); err != nil {
-		return "", fmt.Errorf("generate refresh token: %w", err)
+	var execErr error
+	if errors.Is(err, sql.ErrNoRows) {
+		_, execErr = m.db.Exec(queries.InsertRefreshToken,
+			id,
+			uid,
+			utils.HashRefreshToken(token),
+			now,
+			expiry,
+		)
+	} else {
+		_, execErr = m.db.Exec(queries.UpdateRefreshToken, utils.HashRefreshToken(token), now, expiry, uid)
+	}
+
+	if execErr != nil {
+		return "", fmt.Errorf("db save error: %w", execErr)
 	}
 
 	return token, nil
+}
+
+func (m *Manager) isRefreshTokenExpired(uid uuid.UUID) (bool, error) {
+	var expiry time.Time
+
+	err := m.db.QueryRow(queries.ExpiryCheck, uid).Scan(&expiry)
+	if err != nil {
+		// Todo: if sql.ErrNoRows return custom error
+		return false, fmt.Errorf("check refresh token is expired: %w", err)
+	}
+
+	return time.Now().After(expiry), nil
 }
 
 func loadPrivateKey(path string) (*rsa.PrivateKey, error) {
