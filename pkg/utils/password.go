@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +15,6 @@ func HashPassword(password string) (string, error) {
 	return string(hashedBytes), nil
 }
 
-func HashRefreshToken(token string) string {
-	hashedBytes := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(hashedBytes[:])
+func VerifyPassword(password, passwordHash string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)) == nil
 }
