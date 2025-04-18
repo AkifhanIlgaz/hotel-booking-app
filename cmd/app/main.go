@@ -7,10 +7,12 @@ import (
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/handlers"
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/routes"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/db"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -43,17 +45,31 @@ func main() {
 		log.Fatalf("failed to create token manager: %v", err)
 	}
 
-	router := gin.Default()
+	server := gin.Default()
+
+	router := server.Group("/api")
 
 	userService := services.NewUserService(db)
 	userHandler := handlers.NewUserHandler(userService, tokenManager)
 
-	router.GET("/", userHandler.Register)
+	routeManager := routes.NewManager(router, userHandler)
+
+	routeManager.SetupRoutes()
 
 	port := ":8080"
-	err = router.Run(port)
+	err = server.Run(port)
 	if err != nil {
 		panic("Gin sunucusu başlatılamadı: " + err.Error())
 	}
 
+}
+
+// ! For development
+func setCors(server *gin.Engine) {
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+	corsConfig.AllowHeaders = []string{"*"}
+	corsConfig.AllowCredentials = true
+
+	server.Use(cors.New(corsConfig))
 }
