@@ -1,1 +1,3 @@
 *.yaml
+config/keys
+cmd/exp/

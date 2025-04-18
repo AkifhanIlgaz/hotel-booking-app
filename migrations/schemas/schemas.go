@@ -1,6 +1,20 @@
 package schemas
 
-const Users string = `
+func All() []string {
+	return []string{refreshTokens, users}
+}
+
+const refreshTokens string = `
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  	id UUID PRIMARY KEY,
+  	user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+  	token_hash TEXT NOT NULL UNIQUE,
+  	created_at TIMESTAMP NOT NULL,
+  	expires_at TIMESTAMP NOT NULL
+);
+`
+
+const users string = `
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     name VARCHAR(50) NOT NULL CHECK (char_length(name) >= 3),

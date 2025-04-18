@@ -23,8 +23,16 @@ type PostgresConfig struct {
 	ConnMaxIdleTimeMin int    `mapstructure:"conn_max_idle_time_minutes" validate:"required,min=0"`
 }
 
+type TokenConfig struct {
+	PrivateKeyPath        string `mapstructure:"private_key_path" validate:"required"`
+	PublicKeyPath         string `mapstructure:"public_key_path" validate:"required"`
+	AccessTokenExpiresIn  int    `mapstructure:"access_token_expires_in" validate:"required"`  // minutes
+	RefreshTokenExpiresIn int    `mapstructure:"refresh_token_expires_in" validate:"required"` // days
+}
+
 type Config struct {
 	Postgres PostgresConfig `mapstructure:"postgres"`
+	Token    TokenConfig    `mapstructure:"token"`
 }
 
 func Load(mod string) (Config, error) {
