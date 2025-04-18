@@ -110,5 +110,40 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	
+	user, err := uh.userService.AuthenticateUser(req)
+	if err != nil {
+		// Todo: Error constants
+		if errors.Is(err, errors.New("no user for email")) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": messages.UserNotFound})
+			return
+		}
+		if errors.Is(err, errors.New("invalid password")) {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": messages.InvalidPassword})
+			return
+		}
+	}
+
+	accessToken, err := uh.tokenManager.GenerateAccessToken(user.Id.String(), "user")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": messages.SomethingWentWrong})
+		return
+	}
+
+	// TODO: Better error handling
+	refreshToken, err := uh.tokenManager.GenerateRefreshToken(user.Id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": messages.SomethingWentWrong})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"error":   nil,
+		"message": "Logged in successfully",
+		"payload": gin.H{
+			"access_token":  accessToken,
+			"refresh_token": refreshToken,
+		},
+	})
+
 }
