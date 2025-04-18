@@ -25,7 +25,7 @@ func NewUserService(db *sql.DB) *UserService {
 }
 
 // This function will create default user
-func (us UserService) RegisterUser(registrationReq models.RegistrationRequest) (uuid.UUID, error) {
+func (us *UserService) RegisterUser(registrationReq models.RegistrationRequest) (uuid.UUID, error) {
 	hashedPassword, err := utils.HashPassword(registrationReq.Password)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("register user: %w", err)
@@ -50,4 +50,22 @@ func (us UserService) RegisterUser(registrationReq models.RegistrationRequest) (
 	}
 
 	return id, nil
+}
+
+func (us *UserService) AuthenticateUser(loginReq models.LoginRequest) (*models.User, error) {
+	var user models.User
+
+	if err := us.db.QueryRow(queries.SelectUserByEmail, loginReq.Email).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("no user for email")
+		}
+		return nil, fmt.Errorf("register user: %w", err)
+	}
+
+	isPasswordTrue := utils.VerifyPassword(loginReq.Password, user.PasswordHash)
+	if !isPasswordTrue {
+		return nil, errors.New("invalid password")
+	}
+
+	return &user, nil
 }
