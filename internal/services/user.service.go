@@ -57,14 +57,14 @@ func (us *UserService) AuthenticateUser(loginReq models.LoginRequest) (*models.U
 
 	if err := us.db.QueryRow(queries.SelectUserByEmail, loginReq.Email).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("no user for email")
+			return nil, errors.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("register user: %w", err)
 	}
 
 	isPasswordTrue := utils.VerifyPassword(loginReq.Password, user.PasswordHash)
 	if !isPasswordTrue {
-		return nil, errors.New("invalid password")
+		return nil, errors.ErrWrongPassword
 	}
 
 	return &user, nil

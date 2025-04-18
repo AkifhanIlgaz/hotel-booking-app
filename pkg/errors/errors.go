@@ -9,5 +9,7 @@ var (
 )
 
 var (
-	ErrEmailTaken = errors.New("email address is already taken")
+	ErrEmailTaken    = errors.New("email address is already taken")
+	ErrUserNotFound  = errors.New("user not found")
+	ErrWrongPassword = errors.New("wrong password")
 )
