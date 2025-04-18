@@ -66,7 +66,6 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: Better error handling
 	refreshToken, err := uh.tokenManager.GenerateRefreshToken(id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
@@ -105,7 +104,6 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 
 	user, err := uh.userService.AuthenticateUser(req)
 	if err != nil {
-		// Todo: Error constants
 		if errors.Is(err, errors.ErrUserNotFound) {
 			response.WithError(ctx, http.StatusNotFound, messages.UserNotFound, err)
 			return
@@ -118,12 +116,10 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 
 	accessToken, err := uh.tokenManager.GenerateAccessToken(user.Id.String(), "user")
 	if err != nil {
-
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	// TODO: Better error handling
 	refreshToken, err := uh.tokenManager.GenerateRefreshToken(user.Id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
