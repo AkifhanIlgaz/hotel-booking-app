@@ -5,13 +5,14 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/queries"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/errors"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -118,6 +119,7 @@ func (m *Manager) ParseAccessToken(accessToken string) (*CustomClaims, error) {
 	return claims, nil
 }
 
+// TODO: Refactor => JWT refresh token, store hash of the token on Db
 func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 	expired, err := m.isRefreshTokenExpired(uid)
 	if err != nil {
@@ -155,6 +157,22 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (m *Manager) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
+	var token models.RefreshToken
+
+	err := m.db.QueryRow(queries.SelectRefreshToken, utils.HashRefreshToken(refreshToken)).Scan(&token.Id, &token.UserId, &token.TokenHash, &token.ExpiresAt, &token.CreatedAt)
+	if err != nil {
+		// Todo: if sql.ErrNoRows return custom error
+		return uuid.Nil, fmt.Errorf("check refresh token is expired: %w", err)
+	}
+
+	if time.Now().After(token.ExpiresAt) {
+		return uuid.Nil, errors.ErrTokenExpired
+	}
+
+	return token.UserId, nil
 }
 
 func (m *Manager) isRefreshTokenExpired(uid uuid.UUID) (bool, error) {

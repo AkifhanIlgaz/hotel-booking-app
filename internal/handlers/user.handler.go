@@ -132,3 +132,52 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 	})
 
 }
+
+func (uh *UserHandler) Refresh(ctx *gin.Context) {
+	var req models.RefreshRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
+				var params []string
+				switch fe.Tag() {
+				case "min", "max":
+					params = []string{fe.Param()}
+				}
+				msg := messages.ErrorMessage{
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				response.WithError(ctx, http.StatusBadRequest, msg.Message, fe)
+				return
+			}
+		}
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
+		return
+	}
+
+	uid, err := uh.tokenManager.ValidateRefreshToken(req.RefreshToken)
+	if err != nil {
+		if errors.Is(err, errors.ErrTokenExpired) {
+			response.WithError(ctx, http.StatusUnauthorized, messages.TokenExpired, err)
+			return
+		}
+	}
+	accessToken, err := uh.tokenManager.GenerateAccessToken(uid.String(), "user")
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	refreshToken, err := uh.tokenManager.GenerateRefreshToken(uid)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	response.WithSuccess(ctx, http.StatusOK, messages.SuccessfullyLoggedIn, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
+
+}
