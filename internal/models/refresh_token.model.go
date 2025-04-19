@@ -7,11 +7,11 @@ import (
 )
 
 type RefreshToken struct {
-	Id        uuid.UUID
-	UserId    uuid.UUID
-	TokenHash string
-	ExpiresAt time.Time
-	CreatedAt time.Time
+	Id        uuid.UUID `json:"id"`
+	UserId    uuid.UUID `json:"user_id"`
+	TokenHash string    `json:"-"`
+	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
 	// DeviceInfo DeviceInfo
 }
 
