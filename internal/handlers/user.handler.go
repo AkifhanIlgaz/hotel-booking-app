@@ -13,19 +13,19 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type UserHandler struct {
+type AuthHandler struct {
 	userService  *services.UserService
 	tokenManager *token.Manager
 }
 
-func NewUserHandler(userService *services.UserService, tokenManager *token.Manager) *UserHandler {
-	return &UserHandler{
+func NewAuthHandler(userService *services.UserService, tokenManager *token.Manager) *AuthHandler {
+	return &AuthHandler{
 		userService:  userService,
 		tokenManager: tokenManager,
 	}
 }
 
-func (uh *UserHandler) Register(ctx *gin.Context) {
+func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.RegistrationRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -48,7 +48,7 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	id, err := uh.userService.RegisterUser(req)
+	id, err := h.userService.RegisterUser(req)
 	if err != nil {
 		if errors.Is(err, errors.ErrEmailTaken) {
 			response.WithError(ctx, http.StatusConflict, messages.EmailAlreadyRegistered, err)
@@ -60,13 +60,13 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 	}
 
 	// Todo: role enum
-	accessToken, err := uh.tokenManager.GenerateAccessToken(id.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(id.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(id)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -79,7 +79,7 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Login(ctx *gin.Context) {
+func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.LoginRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -102,7 +102,7 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	user, err := uh.userService.AuthenticateUser(req)
+	user, err := h.userService.AuthenticateUser(req)
 	if err != nil {
 		if errors.Is(err, errors.ErrUserNotFound) {
 			response.WithError(ctx, http.StatusNotFound, messages.UserNotFound, err)
@@ -114,13 +114,13 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		}
 	}
 
-	accessToken, err := uh.tokenManager.GenerateAccessToken(user.Id.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(user.Id.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(user.Id)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(user.Id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -133,7 +133,7 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Refresh(ctx *gin.Context) {
+func (h *AuthHandler) Refresh(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -156,20 +156,20 @@ func (uh *UserHandler) Refresh(ctx *gin.Context) {
 		return
 	}
 
-	uid, err := uh.tokenManager.ValidateRefreshToken(req.RefreshToken)
+	uid, err := h.tokenManager.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errors.ErrTokenExpired) {
 			response.WithError(ctx, http.StatusUnauthorized, messages.TokenExpired, err)
 			return
 		}
 	}
-	accessToken, err := uh.tokenManager.GenerateAccessToken(uid.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(uid.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(uid)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(uid)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -182,7 +182,7 @@ func (uh *UserHandler) Refresh(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Logout(ctx *gin.Context) {
+func (h *AuthHandler) Logout(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -205,7 +205,7 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 		return
 	}
 
-	uid, err := uh.tokenManager.ValidateRefreshToken(req.RefreshToken)
+	uid, err := h.tokenManager.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errors.ErrTokenExpired) {
 			response.WithError(ctx, http.StatusUnauthorized, messages.TokenExpired, err)
@@ -213,7 +213,7 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 		}
 	}
 
-	err = uh.tokenManager.DeleteRefreshToken(uid)
+	err = h.tokenManager.DeleteRefreshToken(uid)
 	if err != nil {
 		if errors.Is(err, errors.ErrNotFoundRefreshToken) {
 			response.WithError(ctx, http.StatusNotFound, messages.TokenNotFound, err)
@@ -223,3 +223,5 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 
 	response.WithSuccess(ctx, http.StatusOK, messages.SuccessfullyLoggedOut, nil)
 }
+
+func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {}

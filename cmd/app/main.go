@@ -50,9 +50,9 @@ func main() {
 	router := server.Group("/api")
 
 	userService := services.NewUserService(db)
-	userHandler := handlers.NewUserHandler(userService, tokenManager)
+	authHandler := handlers.NewAuthHandler(userService, tokenManager)
 
-	routeManager := routes.NewManager(router, userHandler)
+	routeManager := routes.NewManager(router, authHandler)
 
 	routeManager.SetupRoutes()
 
