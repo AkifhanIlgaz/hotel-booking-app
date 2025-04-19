@@ -8,4 +8,5 @@ const (
 	WrongPassword              string = "Şifre hatalı. Lütfen tekrar deneyin."
 	SuccessfullyRegistered     string = "Kayıt başarılı! Şimdi giriş yapabilirsiniz."
 	SuccessfullyLoggedIn       string = "Başarıyla giriş yaptınız."
+	TokenExpired               string = "Oturum süresi doldu. Lütfen tekrar giriş yapın."
 )

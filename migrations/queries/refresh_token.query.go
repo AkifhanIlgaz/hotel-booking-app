@@ -18,3 +18,8 @@ SET token_hash = $1,
     expires_at = $3
     WHERE user_id = $4;
 `
+
+const SelectRefreshToken string = `
+SELECT * FROM refresh_tokens
+WHERE token_hash = $1;
+`
