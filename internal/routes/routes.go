@@ -26,12 +26,11 @@ func (m Manager) userRoutes() {
 	{
 		auth.POST("/login", m.userHandler.Login)
 		auth.POST("/register", m.userHandler.Register)
-
+		auth.POST("/logout", m.userHandler.Logout)
 		auth.POST("/refresh", m.userHandler.Refresh)
-		// TODO: Implement
 
+		// Todo: Implement
 		auth.POST("/forgot-password")
-		auth.POST("/logout")
 
 	}
 }

@@ -9,8 +9,9 @@ var (
 )
 
 var (
-	ErrEmailTaken    = errors.New("email address is already taken")
-	ErrUserNotFound  = errors.New("user not found")
-	ErrWrongPassword = errors.New("wrong password")
-	ErrTokenExpired  = errors.New("token expired")
+	ErrEmailTaken           = errors.New("email address is already taken")
+	ErrUserNotFound         = errors.New("user not found")
+	ErrWrongPassword        = errors.New("wrong password")
+	ErrTokenExpired         = errors.New("token expired")
+	ErrNotFoundRefreshToken = errors.New("refresh token not found")
 )

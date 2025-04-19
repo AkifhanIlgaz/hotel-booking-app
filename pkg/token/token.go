@@ -175,6 +175,24 @@ func (m *Manager) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
 	return token.UserId, nil
 }
 
+func (m *Manager) DeleteRefreshToken(uid uuid.UUID) error {
+	res, err := m.db.Exec(queries.DeleteRefreshToken, uid)
+	if err != nil {
+		return fmt.Errorf("error deleting refresh token: %w", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error getting rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return errors.ErrNotFoundRefreshToken
+	}
+
+	return nil
+}
+
 func (m *Manager) isRefreshTokenExpired(uid uuid.UUID) (bool, error) {
 	var expiry time.Time
 

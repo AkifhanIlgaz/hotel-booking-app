@@ -1,12 +1,14 @@
 package messages
 
 const (
-	SomethingWentWrong         string = "Bir şeyler ters gitti. Lütfen daha sonra tekrar deneyin."
-	InvalidJSONOrMissingFields string = "Gönderdiğiniz bilgiler eksik ya da geçersiz. Lütfen formu kontrol edin."
-	EmailAlreadyRegistered     string = "Bu e-posta adresi zaten kullanılıyor. Giriş yapmayı deneyin."
-	UserNotFound               string = "Böyle bir kullanıcı bulunamadı. Lütfen bilgilerinizi kontrol edin."
-	WrongPassword              string = "Şifre hatalı. Lütfen tekrar deneyin."
-	SuccessfullyRegistered     string = "Kayıt başarılı! Şimdi giriş yapabilirsiniz."
-	SuccessfullyLoggedIn       string = "Başarıyla giriş yaptınız."
-	TokenExpired               string = "Oturum süresi doldu. Lütfen tekrar giriş yapın."
+	SomethingWentWrong         string = "Something went wrong. Please try again later."
+	InvalidJSONOrMissingFields string = "The information you submitted is incomplete or invalid. Please check the form."
+	EmailAlreadyRegistered     string = "This email address is already in use. Try logging in instead."
+	UserNotFound               string = "No user found with the given information. Please double-check your details."
+	WrongPassword              string = "Incorrect password. Please try again."
+	SuccessfullyRegistered     string = "Registration successful! You can now log in."
+	SuccessfullyLoggedIn       string = "Logged in successfully."
+	SuccessfullyLoggedOut      string = "Logged out successfully."
+	TokenExpired               string = "Your session has expired. Please log in again."
+	TokenNotFound              string = "Token not found. Please log in again."
 )

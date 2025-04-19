@@ -23,3 +23,8 @@ const SelectRefreshToken string = `
 SELECT * FROM refresh_tokens
 WHERE token_hash = $1;
 `
+
+const DeleteRefreshToken string = `
+DELETE FROM refresh_tokens
+WHERE user_id = $1;
+`
