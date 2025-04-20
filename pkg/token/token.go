@@ -31,6 +31,11 @@ type CustomClaims struct {
 	Role string `json:"role"`
 }
 
+type ResetClaims struct {
+	jwt.RegisteredClaims
+	Email string `json:"email"`
+}
+
 func NewTokenManager(db *sql.DB, tokenConfig *config.TokenConfig) (*Manager, error) {
 	tokenManager := Manager{
 		db: db,
@@ -64,6 +69,29 @@ func (m *Manager) GenerateAccessToken(userId, role string) (string, error) {
 			Subject:   userId,
 		},
 		Role: role,
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+
+	signedToken, err := token.SignedString(m.accessTokenPrivateKey)
+	if err != nil {
+		return "", fmt.Errorf("error signing access token: %w", err)
+	}
+
+	return signedToken, nil
+}
+
+func (m *Manager) GenerateResetToken(email string) (string, error) {
+
+	now := time.Now()
+
+	claims := ResetClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(2 * time.Minute)),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+		Email: email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
@@ -117,6 +145,49 @@ func (m *Manager) ParseAccessToken(accessToken string) (*CustomClaims, error) {
 	}
 
 	return claims, nil
+}
+
+func (m *Manager) ParseResetToken(resetToken string) (string, error) {
+	token, err := jwt.ParseWithClaims(
+		resetToken,
+		&ResetClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			// Verify that the signing algorithm is what we expect
+			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+
+			// Return the public key for verification
+			return m.accessTokenPublicKey, nil
+		},
+		// Additional validation options
+		jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Name}),
+		jwt.WithExpirationRequired(),
+		jwt.WithIssuedAt(),
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, jwt.ErrTokenExpired):
+			return "", fmt.Errorf("token expired: %w", err)
+		case errors.Is(err, jwt.ErrTokenNotValidYet):
+			return "", fmt.Errorf("token not valid yet: %w", err)
+		default:
+			return "", fmt.Errorf("invalid token: %w", err)
+		}
+	}
+
+	// Verify token is valid and extract claims
+	if !token.Valid {
+		return "", fmt.Errorf("invalid token")
+	}
+
+	// Type assert the claims
+	claims, ok := token.Claims.(*ResetClaims)
+	if !ok {
+		return "", fmt.Errorf("invalid token claims")
+	}
+
+	return claims.Email, nil
 }
 
 // TODO: Refactor => JWT refresh token, store hash of the token on Db

@@ -1,27 +1,25 @@
 package queries
 
 const InsertOTPToken = `
-	INSERT INTO otp_tokens (id, user_id, token, expires_at, created_at, used)
+	INSERT INTO otp_tokens (id, user_id, token, expires_at, created_at)
 		VALUES (
 			$1,
 			$2,
 			$3,
 			$4,
-			$5,
-			$6
+			$5
 		)
 `
 
 const SelectOTPToken = `
-	SELECT id, user_id, token, expires_at, created_at, used
+	SELECT id, user_id, token, expires_at, created_at
 	FROM otp_tokens
 	WHERE user_id = $1 AND token = $2
 `
 
-const MarkOTPAsUsed = `
-	UPDATE otp_tokens
-	SET used = true
-	WHERE id = $1
+const DeleteOTPToken = `
+	DELETE FROM otp_tokens
+	WHERE token = $1
 `
 
 const SelectUserIdByEmail = `

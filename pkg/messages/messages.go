@@ -11,4 +11,5 @@ const (
 	SuccessfullyLoggedOut      string = "Logged out successfully."
 	TokenExpired               string = "Your session has expired. Please log in again."
 	TokenNotFound              string = "Token not found. Please log in again."
+	SentOTPCode                string = "Check your inbox! We’ve just sent you a code to reset your password."
 )

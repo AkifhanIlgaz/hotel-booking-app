@@ -277,9 +277,7 @@ func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-
-	
-
+	response.WithSuccess(ctx, http.StatusOK, messages.SentOTPCode, nil)
 }
 
 func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
@@ -331,7 +329,21 @@ func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
 		return
 	}
 
+	// Generate JWT reset token to change password
+	resetToken, err := h.tokenManager.GenerateResetToken(req.Email)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, nil)
+		return
+	}
+
 	// If OTP is valid, you can proceed with the next step (e.g., password reset)
 	// For now, we'll just return a success message
-	response.WithSuccess(ctx, http.StatusOK, "OTP verified successfully", nil)
+	response.WithSuccess(ctx, http.StatusOK, "OTP verified successfully", gin.H{
+		"reset_token": resetToken,
+	})
+}
+
+
+func (h *AuthHandler) ChangePassword( ctx *gin.Context) {
+	
 }

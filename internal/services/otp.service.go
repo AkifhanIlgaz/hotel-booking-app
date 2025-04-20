@@ -40,7 +40,6 @@ func (s *OTPService) GenerateOTP(userId uuid.UUID) (string, error) {
 		otp,
 		expiresAt,
 		now,
-		false,
 	)
 	if err != nil {
 		return "", fmt.Errorf("save otp token: %w", err)
@@ -69,7 +68,6 @@ func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 		&token.Token,
 		&token.ExpiresAt,
 		&token.CreatedAt,
-		&token.Used,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -83,15 +81,10 @@ func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 		return false, errors.New("otp expired")
 	}
 
-	// Check if OTP is already used
-	if token.Used {
-		return false, errors.New("otp already used")
-	}
-
-	// Mark OTP as used
-	_, err = s.db.Exec(queries.MarkOTPAsUsed, token.Id)
+	// Delete the OTP after successful verification
+	_, err = s.db.Exec(queries.DeleteOTPToken, otp)
 	if err != nil {
-		return false, fmt.Errorf("mark otp as used: %w", err)
+		return false, fmt.Errorf("delete otp: %w", err)
 	}
 
 	return true, nil

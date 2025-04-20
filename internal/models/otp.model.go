@@ -12,7 +12,6 @@ type OTPToken struct {
 	Token     string
 	ExpiresAt time.Time
 	CreatedAt time.Time
-	Used      bool
 }
 
 type OTPRequest struct {
