@@ -57,9 +57,14 @@ func main() {
 	otpService := services.NewOTPService(db)
 
 	authHandler := handlers.NewAuthHandler(userService, otpService, tokenManager, mailManager)
+<<<<<<< HEAD
 	authMiddleware := middlewares.NewAuthMiddleware(tokenManager)
 
 	routeManager := routes.NewManager(router, authHandler, authMiddleware)
+=======
+
+	routeManager := routes.NewManager(router, authHandler)
+>>>>>>> cc2aac0c3ed8781304723a6f811ddfba44838dad
 
 	routeManager.SetupRoutes()
 
