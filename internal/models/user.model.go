@@ -48,3 +48,8 @@ type LoginRequest struct {
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
+
+type ChangePasswordRequest struct {
+	ResetToken string `json:"reset_token" binding:"required"`
+	Password   string `json:"password" binding:"required,min=8"`
+}

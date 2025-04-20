@@ -11,3 +11,9 @@ const InsertUser = `
 			$6
 		)
 `
+
+const UpdateUserPasswordByEmail = `
+	UPDATE users
+	SET password_hash = $1,
+	WHERE email = $2
+`

@@ -343,7 +343,43 @@ func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
 	})
 }
 
+func (h *AuthHandler) ChangePassword(ctx *gin.Context) {
+	var req models.ChangePasswordRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
+				var params []string
+				switch fe.Tag() {
+				case "min", "max":
+					params = []string{fe.Param()}
+				}
+				msg := messages.ErrorMessage{
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				response.WithError(ctx, http.StatusBadRequest, msg.Message, fe)
+				return
+			}
+		}
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
+		return
+	}
 
-func (h *AuthHandler) ChangePassword( ctx *gin.Context) {
-	
+	mail, err := h.tokenManager.ParseResetToken(req.ResetToken)
+	if err != nil {
+		// Todo: Better error handling
+		response.WithError(ctx, http.StatusUnauthorized, messages.InvalidToken, err)
+		return
+	}
+
+	err = h.userService.UpdatePassword(mail, req.Password)
+	if err != nil {
+		// Todo: Better error handling
+		response.WithError(ctx, http.StatusUnauthorized, messages.InvalidToken, err)
+		return
+	}
+
+	response.WithSuccess(ctx, http.StatusOK, "Password change", nil)
+
 }

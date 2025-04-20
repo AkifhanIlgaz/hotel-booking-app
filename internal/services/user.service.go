@@ -82,3 +82,16 @@ func (us *UserService) GetUserByEmail(email string) (*models.User, error) {
 
 	return &user, nil
 }
+
+func (us *UserService) UpdatePassword(email, password string) error {
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	if _, err := us.db.Exec(queries.UpdateUserPasswordByEmail, hashedPassword, email); err != nil {
+		return fmt.Errorf("update user password: %w", err)
+	}
+
+	return nil
+}
