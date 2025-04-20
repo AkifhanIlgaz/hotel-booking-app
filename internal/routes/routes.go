@@ -28,9 +28,7 @@ func (m Manager) userRoutes() {
 		auth.POST("/register", m.authHandler.Register)
 		auth.POST("/logout", m.authHandler.Logout)
 		auth.POST("/refresh", m.authHandler.Refresh)
-
-		// Todo: Implement
 		auth.POST("/forgot-password", m.authHandler.ForgotPassword)
-
+		auth.POST("/verify-otp", m.authHandler.VerifyOTP)
 	}
 }

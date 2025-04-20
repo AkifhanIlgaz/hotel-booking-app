@@ -69,3 +69,16 @@ func (us *UserService) AuthenticateUser(loginReq models.LoginRequest) (*models.U
 
 	return &user, nil
 }
+
+func (us *UserService) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+
+	if err := us.db.QueryRow(queries.SelectUserByEmail, email).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("check is user exists: %w", err)
+	}
+
+	return &user, nil
+}

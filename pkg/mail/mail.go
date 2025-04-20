@@ -18,12 +18,12 @@ type Email struct {
 	HTML    string
 }
 
-type EmailManager struct {
+type Manager struct {
 	dialer mail.Dialer
 }
 
-func NewManager(config config.SMTPConfig) *EmailManager {
-	return &EmailManager{
+func NewManager(config config.SMTPConfig) *Manager {
+	return &Manager{
 		dialer: mail.Dialer{
 			Host:     config.Host,
 			Port:     config.Port,
@@ -33,7 +33,7 @@ func NewManager(config config.SMTPConfig) *EmailManager {
 	}
 }
 
-func (m *EmailManager) Send(email Email) error {
+func (m *Manager) Send(email Email) error {
 	msg := mail.NewMessage()
 
 	msg.SetHeader("To", email.To)
@@ -51,7 +51,7 @@ type resetEmailData struct {
 	OTP string
 }
 
-func (m *EmailManager) ForgotPassword(to, otp string) error {
+func (m *Manager) ForgotPassword(to, otp string) error {
 	tmpl, err := template.ParseFiles("templates/password_reset.html")
 	if err != nil {
 		return err
