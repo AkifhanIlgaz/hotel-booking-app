@@ -7,10 +7,12 @@ import (
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/handlers"
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/middlewares"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/routes"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/db"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/mail"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -45,14 +47,19 @@ func main() {
 		log.Fatalf("failed to create token manager: %v", err)
 	}
 
+	mailManager := mail.NewManager(cfg.SMTP)
+
 	server := gin.Default()
 
 	router := server.Group("/api")
 
 	userService := services.NewUserService(db)
-	userHandler := handlers.NewUserHandler(userService, tokenManager)
+	otpService := services.NewOTPService(db)
 
-	routeManager := routes.NewManager(router, userHandler)
+	authHandler := handlers.NewAuthHandler(userService, otpService, tokenManager, mailManager)
+	authMiddleware := middlewares.NewAuthMiddleware(tokenManager)
+
+	routeManager := routes.NewManager(router, authHandler, authMiddleware)
 
 	routeManager.SetupRoutes()
 

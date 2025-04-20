@@ -30,9 +30,17 @@ type TokenConfig struct {
 	RefreshTokenExpiresIn int    `mapstructure:"refresh_token_expires_in" validate:"required"` // days
 }
 
+type SMTPConfig struct {
+	Host     string `mapstructure:"host" validate:"required,hostname|ip"`
+	Port     int    `mapstructure:"port" validate:"required,min=1,max=65535"`
+	Username string `mapstructure:"username" validate:"required"`
+	Password string `mapstructure:"password" validate:"required"`
+}
+
 type Config struct {
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	Token    TokenConfig    `mapstructure:"token"`
+	SMTP     SMTPConfig     `mapstructure:"smtp"`
 }
 
 func Load(mod string) (Config, error) {
