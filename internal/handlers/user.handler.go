@@ -6,6 +6,7 @@ import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/errors"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/mail"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/messages"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/response"
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
@@ -13,19 +14,23 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type UserHandler struct {
+type AuthHandler struct {
 	userService  *services.UserService
 	tokenManager *token.Manager
+	otpService   *services.OTPService
+	mailManager  *mail.Manager
 }
 
-func NewUserHandler(userService *services.UserService, tokenManager *token.Manager) *UserHandler {
-	return &UserHandler{
+func NewAuthHandler(userService *services.UserService, otpService *services.OTPService, tokenManager *token.Manager, mailManager *mail.Manager) *AuthHandler {
+	return &AuthHandler{
 		userService:  userService,
 		tokenManager: tokenManager,
+		otpService:   otpService,
+		mailManager:  mailManager,
 	}
 }
 
-func (uh *UserHandler) Register(ctx *gin.Context) {
+func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.RegistrationRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -48,7 +53,7 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	id, err := uh.userService.RegisterUser(req)
+	id, err := h.userService.RegisterUser(req)
 	if err != nil {
 		if errors.Is(err, errors.ErrEmailTaken) {
 			response.WithError(ctx, http.StatusConflict, messages.EmailAlreadyRegistered, err)
@@ -60,13 +65,13 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 	}
 
 	// Todo: role enum
-	accessToken, err := uh.tokenManager.GenerateAccessToken(id.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(id.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(id)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -79,7 +84,7 @@ func (uh *UserHandler) Register(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Login(ctx *gin.Context) {
+func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.LoginRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -102,7 +107,7 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	user, err := uh.userService.AuthenticateUser(req)
+	user, err := h.userService.AuthenticateUser(req)
 	if err != nil {
 		if errors.Is(err, errors.ErrUserNotFound) {
 			response.WithError(ctx, http.StatusNotFound, messages.UserNotFound, err)
@@ -114,13 +119,13 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 		}
 	}
 
-	accessToken, err := uh.tokenManager.GenerateAccessToken(user.Id.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(user.Id.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(user.Id)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(user.Id)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -133,7 +138,7 @@ func (uh *UserHandler) Login(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Refresh(ctx *gin.Context) {
+func (h *AuthHandler) Refresh(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -156,20 +161,20 @@ func (uh *UserHandler) Refresh(ctx *gin.Context) {
 		return
 	}
 
-	uid, err := uh.tokenManager.ValidateRefreshToken(req.RefreshToken)
+	uid, err := h.tokenManager.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errors.ErrTokenExpired) {
 			response.WithError(ctx, http.StatusUnauthorized, messages.TokenExpired, err)
 			return
 		}
 	}
-	accessToken, err := uh.tokenManager.GenerateAccessToken(uid.String(), "user")
+	accessToken, err := h.tokenManager.GenerateAccessToken(uid.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
 	}
 
-	refreshToken, err := uh.tokenManager.GenerateRefreshToken(uid)
+	refreshToken, err := h.tokenManager.GenerateRefreshToken(uid)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return
@@ -182,7 +187,7 @@ func (uh *UserHandler) Refresh(ctx *gin.Context) {
 
 }
 
-func (uh *UserHandler) Logout(ctx *gin.Context) {
+func (h *AuthHandler) Logout(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -205,7 +210,7 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 		return
 	}
 
-	uid, err := uh.tokenManager.ValidateRefreshToken(req.RefreshToken)
+	uid, err := h.tokenManager.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
 		if errors.Is(err, errors.ErrTokenExpired) {
 			response.WithError(ctx, http.StatusUnauthorized, messages.TokenExpired, err)
@@ -213,7 +218,7 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 		}
 	}
 
-	err = uh.tokenManager.DeleteRefreshToken(uid)
+	err = h.tokenManager.DeleteRefreshToken(uid)
 	if err != nil {
 		if errors.Is(err, errors.ErrNotFoundRefreshToken) {
 			response.WithError(ctx, http.StatusNotFound, messages.TokenNotFound, err)
@@ -222,4 +227,159 @@ func (uh *UserHandler) Logout(ctx *gin.Context) {
 	}
 
 	response.WithSuccess(ctx, http.StatusOK, messages.SuccessfullyLoggedOut, nil)
+}
+
+func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {
+	var req models.OTPRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
+				var params []string
+				switch fe.Tag() {
+				case "min", "max":
+					params = []string{fe.Param()}
+				}
+				msg := messages.ErrorMessage{
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				response.WithError(ctx, http.StatusBadRequest, msg.Message, fe)
+				return
+			}
+		}
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
+		return
+	}
+
+	user, err := h.userService.GetUserByEmail(req.Email)
+	if err != nil {
+		if errors.Is(err, errors.ErrUserNotFound) {
+			response.WithError(ctx, http.StatusNotFound, messages.UserNotFound, err)
+			return
+		}
+
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	// Todo: Create OTP code for this email
+	otpCode, err := h.otpService.GenerateOTP(user.Email)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	// Todo: Send OTP code to mail
+	err = h.mailManager.ForgotPassword(req.Email, otpCode)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	response.WithSuccess(ctx, http.StatusOK, messages.SentOTPCode, nil)
+}
+
+func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
+	var req models.OTPVerificationRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
+				var params []string
+				switch fe.Tag() {
+				case "min", "max":
+					params = []string{fe.Param()}
+				}
+				msg := messages.ErrorMessage{
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				response.WithError(ctx, http.StatusBadRequest, msg.Message, fe)
+				return
+			}
+		}
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
+		return
+	}
+
+	valid, err := h.otpService.VerifyOTP(req.Email, req.OTP)
+	if err != nil {
+		switch {
+		case errors.Is(err, errors.ErrUserNotFound):
+			response.WithError(ctx, http.StatusNotFound, messages.UserNotFound, err)
+			return
+		case err.Error() == "invalid otp":
+			response.WithError(ctx, http.StatusUnauthorized, "Invalid OTP code", err)
+			return
+		case err.Error() == "otp expired":
+			response.WithError(ctx, http.StatusUnauthorized, "OTP code has expired", err)
+			return
+		case err.Error() == "otp already used":
+			response.WithError(ctx, http.StatusUnauthorized, "OTP code has already been used", err)
+			return
+		default:
+			response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+			return
+		}
+	}
+
+	if !valid {
+		response.WithError(ctx, http.StatusUnauthorized, "Invalid OTP code", nil)
+		return
+	}
+
+	// Generate JWT reset token to change password
+	resetToken, err := h.tokenManager.GenerateResetToken(req.Email)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, nil)
+		return
+	}
+
+	// If OTP is valid, you can proceed with the next step (e.g., password reset)
+	// For now, we'll just return a success message
+	response.WithSuccess(ctx, http.StatusOK, "OTP verified successfully", gin.H{
+		"reset_token": resetToken,
+	})
+}
+
+func (h *AuthHandler) ChangePassword(ctx *gin.Context) {
+	var req models.ChangePasswordRequest
+	if err := ctx.BindJSON(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			if len(validationErrors) > 0 {
+				fe := validationErrors[0]
+				var params []string
+				switch fe.Tag() {
+				case "min", "max":
+					params = []string{fe.Param()}
+				}
+				msg := messages.ErrorMessage{
+					Message: messages.MessageForTag(fe.Tag(), params...),
+				}
+				response.WithError(ctx, http.StatusBadRequest, msg.Message, fe)
+				return
+			}
+		}
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
+		return
+	}
+
+	mail, err := h.tokenManager.ParseResetToken(req.ResetToken)
+	if err != nil {
+		// Todo: Better error handling
+		response.WithError(ctx, http.StatusUnauthorized, messages.InvalidToken, err)
+		return
+	}
+
+	err = h.userService.UpdatePassword(mail, req.Password)
+	if err != nil {
+		// Todo: Better error handling
+		response.WithError(ctx, http.StatusUnauthorized, messages.InvalidToken, err)
+		return
+	}
+
+	response.WithSuccess(ctx, http.StatusOK, "Password change", nil)
+
 }

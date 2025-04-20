@@ -36,11 +36,13 @@ require (
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gin-contrib/cors v1.7.5
+	github.com/go-mail/mail/v2 v2.3.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/google/uuid v1.6.0

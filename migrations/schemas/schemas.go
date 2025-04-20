@@ -1,7 +1,7 @@
 package schemas
 
 func All() []string {
-	return []string{refreshTokens, users}
+	return []string{refreshTokens, users, otpTokens}
 }
 
 const refreshTokens string = `
@@ -21,6 +21,16 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     password_hash TEXT NOT NULL CHECK (char_length(password_hash) >= 8),
     role VARCHAR(10) NOT NULL CHECK (role IN ('admin', 'user')),
+    created_at TIMESTAMP NOT NULL
+);
+`
+
+const otpTokens string = `
+CREATE TABLE IF NOT EXISTS otp_tokens (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL
 );
 `

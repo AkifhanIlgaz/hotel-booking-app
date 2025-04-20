@@ -7,13 +7,13 @@ import (
 
 type Manager struct {
 	r           *gin.RouterGroup
-	userHandler *handlers.UserHandler
+	authHandler *handlers.AuthHandler
 }
 
-func NewManager(r *gin.RouterGroup, userHandler *handlers.UserHandler) *Manager {
+func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler) *Manager {
 	return &Manager{
 		r:           r,
-		userHandler: userHandler,
+		authHandler: authHandler,
 	}
 }
 
@@ -24,13 +24,13 @@ func (m *Manager) SetupRoutes() {
 func (m Manager) userRoutes() {
 	auth := m.r.Group("/auth")
 	{
-		auth.POST("/login", m.userHandler.Login)
-		auth.POST("/register", m.userHandler.Register)
-		auth.POST("/logout", m.userHandler.Logout)
-		auth.POST("/refresh", m.userHandler.Refresh)
+		auth.POST("/login", m.authHandler.Login)
+		auth.POST("/register", m.authHandler.Register)
+		auth.POST("/logout", m.authHandler.Logout)
+		auth.POST("/refresh", m.authHandler.Refresh)
 
-		// Todo: Implement
-		auth.POST("/forgot-password")
-
+		auth.POST("/change-password", m.authHandler.ChangePassword)
+		auth.POST("/forgot-password", m.authHandler.ForgotPassword)
+		auth.POST("/verify-otp", m.authHandler.VerifyOTP)
 	}
 }
