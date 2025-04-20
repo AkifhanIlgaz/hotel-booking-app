@@ -15,5 +15,5 @@ const InsertUser = `
 const UpdateUserPasswordByEmail = `
 	UPDATE users
 	SET password_hash = $1,
-	WHERE email = $2
+	WHERE email = $2;
 `

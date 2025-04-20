@@ -31,9 +31,6 @@ CREATE TABLE IF NOT EXISTS otp_tokens (
     user_id UUID NOT NULL REFERENCES users(id),
     token VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS idx_otp_tokens_user_id ON otp_tokens(user_id);
-CREATE INDEX IF NOT EXISTS idx_otp_tokens_token ON otp_tokens(token);
 `
