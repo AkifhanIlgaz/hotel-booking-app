@@ -1,7 +1,7 @@
 package queries
 
 const InsertOTPToken = `
-	INSERT INTO otp_tokens (id, user_id, token, expires_at, created_at)
+	INSERT INTO otp_tokens (id, email, token_hash, expires_at, created_at)
 		VALUES (
 			$1,
 			$2,
@@ -12,14 +12,14 @@ const InsertOTPToken = `
 `
 
 const SelectOTPToken = `
-	SELECT id, user_id, token, expires_at, created_at
+	SELECT id, email, token_hash, expires_at, created_at
 	FROM otp_tokens
-	WHERE user_id = $1 AND token = $2
+	WHERE email = $1 AND token_hash = $2
 `
 
 const DeleteOTPToken = `
 	DELETE FROM otp_tokens
-	WHERE token = $1
+	WHERE token_hash = $1
 `
 
 const SelectUserIdByEmail = `

@@ -8,8 +8,8 @@ import (
 
 type OTPToken struct {
 	Id        uuid.UUID
-	UserId    uuid.UUID
-	Token     string
+	Email     string
+	TokenHash string
 	ExpiresAt time.Time
 	CreatedAt time.Time
 }

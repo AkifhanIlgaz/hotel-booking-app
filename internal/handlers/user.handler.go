@@ -264,7 +264,7 @@ func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {
 	}
 
 	// Todo: Create OTP code for this email
-	otpCode, err := h.otpService.GenerateOTP(user.Id)
+	otpCode, err := h.otpService.GenerateOTP(user.Email)
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
 		return

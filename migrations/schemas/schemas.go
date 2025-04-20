@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS users (
 const otpTokens string = `
 CREATE TABLE IF NOT EXISTS otp_tokens (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES users(id),
-    token VARCHAR(6) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    token_hash TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL
 );

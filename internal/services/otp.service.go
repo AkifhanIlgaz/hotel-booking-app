@@ -22,7 +22,7 @@ func NewOTPService(db *sql.DB) *OTPService {
 	}
 }
 
-func (s *OTPService) GenerateOTP(userId uuid.UUID) (string, error) {
+func (s *OTPService) GenerateOTP(email string) (string, error) {
 	// Generate a 6-digit OTP
 	otp, err := utils.GenerateNumericOTP(6)
 	if err != nil {
@@ -32,12 +32,12 @@ func (s *OTPService) GenerateOTP(userId uuid.UUID) (string, error) {
 	// Create OTP token record
 	id := uuid.New()
 	now := time.Now()
-	expiresAt := now.Add(2 * time.Minute) // OTP expires in 10 minutes
+	expiresAt := now.Add(10 * time.Minute) // OTP expires in 10 minutes
 
 	_, err = s.db.Exec(queries.InsertOTPToken,
 		id,
-		userId,
-		otp,
+		email,
+		utils.Hash(otp),
 		expiresAt,
 		now,
 	)
@@ -50,22 +50,12 @@ func (s *OTPService) GenerateOTP(userId uuid.UUID) (string, error) {
 
 func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 	var token models.OTPToken
-	var userId uuid.UUID
-
-	// First get the user ID from email
-	err := s.db.QueryRow(queries.SelectUserIdByEmail, email).Scan(&userId)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, errors.ErrUserNotFound
-		}
-		return false, fmt.Errorf("get user id: %w", err)
-	}
 
 	// Then verify the OTP
-	err = s.db.QueryRow(queries.SelectOTPToken, userId, otp).Scan(
+	err := s.db.QueryRow(queries.SelectOTPToken, email, utils.Hash(otp)).Scan(
 		&token.Id,
-		&token.UserId,
-		&token.Token,
+		&token.Email,
+		&token.TokenHash,
 		&token.ExpiresAt,
 		&token.CreatedAt,
 	)
@@ -82,7 +72,7 @@ func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 	}
 
 	// Delete the OTP after successful verification
-	_, err = s.db.Exec(queries.DeleteOTPToken, otp)
+	_, err = s.db.Exec(queries.DeleteOTPToken, utils.Hash(otp))
 	if err != nil {
 		return false, fmt.Errorf("delete otp: %w", err)
 	}

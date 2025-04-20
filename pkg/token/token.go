@@ -82,7 +82,6 @@ func (m *Manager) GenerateAccessToken(userId, role string) (string, error) {
 }
 
 func (m *Manager) GenerateResetToken(email string) (string, error) {
-
 	now := time.Now()
 
 	claims := ResetClaims{
@@ -215,12 +214,12 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 		_, execErr = m.db.Exec(queries.InsertRefreshToken,
 			id,
 			uid,
-			utils.HashRefreshToken(token),
+			utils.Hash(token),
 			now,
 			expiry,
 		)
 	} else {
-		_, execErr = m.db.Exec(queries.UpdateRefreshToken, utils.HashRefreshToken(token), now, expiry, uid)
+		_, execErr = m.db.Exec(queries.UpdateRefreshToken, utils.Hash(token), now, expiry, uid)
 	}
 
 	if execErr != nil {
@@ -233,7 +232,7 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 func (m *Manager) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
 	var token models.RefreshToken
 
-	err := m.db.QueryRow(queries.SelectRefreshToken, utils.HashRefreshToken(refreshToken)).Scan(&token.Id, &token.UserId, &token.TokenHash, &token.ExpiresAt, &token.CreatedAt)
+	err := m.db.QueryRow(queries.SelectRefreshToken, utils.Hash(refreshToken)).Scan(&token.Id, &token.UserId, &token.TokenHash, &token.ExpiresAt, &token.CreatedAt)
 	if err != nil {
 		// Todo: if sql.ErrNoRows return custom error
 		return uuid.Nil, fmt.Errorf("check refresh token is expired: %w", err)

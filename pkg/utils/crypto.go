@@ -29,7 +29,7 @@ func RandString(n int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
-func HashRefreshToken(token string) string {
+func Hash(token string) string {
 	hashedBytes := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hashedBytes[:])
 }
