@@ -268,7 +268,9 @@ func (m *Manager) isRefreshTokenExpired(uid uuid.UUID) (bool, error) {
 
 	err := m.db.QueryRow(queries.ExpiryCheck, uid).Scan(&expiry)
 	if err != nil {
-		// Todo: if sql.ErrNoRows return custom error
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
 		return false, fmt.Errorf("check refresh token is expired: %w", err)
 	}
 

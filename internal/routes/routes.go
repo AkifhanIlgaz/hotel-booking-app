@@ -2,18 +2,21 @@ package routes
 
 import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/handlers"
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 type Manager struct {
-	r           *gin.RouterGroup
-	authHandler *handlers.AuthHandler
+	r              *gin.RouterGroup
+	authMiddleware *middlewares.AuthMiddleware
+	authHandler    *handlers.AuthHandler
 }
 
-func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler) *Manager {
+func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler, authMiddleware *middlewares.AuthMiddleware) *Manager {
 	return &Manager{
-		r:           r,
-		authHandler: authHandler,
+		r:              r,
+		authMiddleware: authMiddleware,
+		authHandler:    authHandler,
 	}
 }
 
@@ -32,5 +35,7 @@ func (m Manager) userRoutes() {
 		auth.POST("/change-password", m.authHandler.ChangePassword)
 		auth.POST("/forgot-password", m.authHandler.ForgotPassword)
 		auth.POST("/verify-otp", m.authHandler.VerifyOTP)
+
+		auth.GET("/test", m.authMiddleware.AccessToken())
 	}
 }

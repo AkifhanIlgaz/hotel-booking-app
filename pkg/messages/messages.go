@@ -13,4 +13,6 @@ const (
 	TokenNotFound              string = "Token not found. Please log in again."
 	SentOTPCode                string = "Check your inbox! We’ve just sent you a code to reset your password."
 	InvalidToken               string = "Invalid Token" // ! change
+	InvalidAuthHeader          string = "Invalid Authorization Header"
+	InvalidOTP                 string = "Invalid OTP. Please try again."
 )

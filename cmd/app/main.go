@@ -7,6 +7,7 @@ import (
 
 	"github.com/AkifhanIlgaz/hotel-booking-app/config"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/handlers"
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/middlewares"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/routes"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations"
@@ -56,8 +57,9 @@ func main() {
 	otpService := services.NewOTPService(db)
 
 	authHandler := handlers.NewAuthHandler(userService, otpService, tokenManager, mailManager)
+	authMiddleware := middlewares.NewAuthMiddleware(tokenManager)
 
-	routeManager := routes.NewManager(router, authHandler)
+	routeManager := routes.NewManager(router, authHandler, authMiddleware)
 
 	routeManager.SetupRoutes()
 
