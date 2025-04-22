@@ -2,8 +2,13 @@ package migrations
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
+	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/queries"
 	"github.com/AkifhanIlgaz/hotel-booking-app/migrations/schemas"
 )
 
@@ -11,6 +16,33 @@ func Init(db *sql.DB) error {
 	err := createTables(db, schemas.All()...)
 	if err != nil {
 		return fmt.Errorf("failed to migrate: %w", err)
+	}
+
+	err = addHotels(db)
+	if err != nil {
+		return fmt.Errorf("failed to add hotels: %w", err)
+	}
+
+	return nil
+}
+
+func addHotels(db *sql.DB) error {
+	doc, err := os.ReadFile("c:/Users/AKIF/Desktop/workspace/hotel-booking-app/mock/hotels.json")
+	if err != nil {
+		return fmt.Errorf("failed to read hotels.json: %w", err)
+	}
+
+	var hotels []models.Hotel
+	err = json.Unmarshal(doc, &hotels)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal hotels.json: %w", err)
+	}
+
+	for _, hotel := range hotels {
+		_, err := db.Exec(queries.InsertHotelQuery, hotel.Id, hotel.Name, hotel.Description, hotel.Location.City, hotel.Location.Country, hotel.ImageUrl, hotel.PricePerNight, hotel.Rating, hotel.PhoneNumber, strings.Join(hotel.Features, ","), hotel.CreatedAt)
+		if err != nil {
+			return fmt.Errorf("failed to insert hotel: %w", err)
+		}
 	}
 
 	return nil

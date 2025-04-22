@@ -1,0 +1,212 @@
+[
+  {
+    "id": "2d539fd0-23cf-4a48-a781-79f17f04e622",
+    "name": "Hotel Arts Barcelona",
+    "description": "A landmark of modern luxury on Barcelona's beachfront with stunning views and exceptional dining.",
+    "location": {
+      "city": "Barcelona",
+      "country": "Spain"
+    },
+    "image_url": "https://via.placeholder.com/300/FF0000/FFFFFF?Text=Hotel+Arts+Barcelona",
+    "price_per_night": "450",
+    "rating": 4.8,
+    "features": [
+      "Sea view",
+      "Michelin-starred restaurants",
+      "Spa",
+      "Outdoor pools",
+      "Art collection"
+    ],
+    "phone": "+34 612 345 678",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "a72a3423-8a01-4a9c-8979-f50b0f0a74df",
+    "name": "The Ritz-Carlton, Abama",
+    "description": "An opulent resort in Tenerife featuring a private beach, championship golf course, and diverse culinary experiences.",
+    "location": {
+      "city": "Tenerife",
+      "country": "Spain"
+    },
+    "image_url": "https://via.placeholder.com/300/FFFF00/000000?Text=Ritz-Carlton+Abama",
+    "price_per_night": "400",
+    "rating": 4.8,
+    "features": [
+      "Private beach",
+      "Golf course",
+      "Spa",
+      "Kids' club",
+      "Multiple swimming pools"
+    ],
+    "phone": "+34 643 987 210",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "f94e4d26-73f3-4f4a-9d32-c4c9a0d7f978",
+    "name": "Mandarin Oriental, Ritz Madrid",
+    "description": "A beautifully restored iconic hotel in the heart of Madrid, offering classic elegance and exceptional service.",
+    "location": {
+      "city": "Madrid",
+      "country": "Spain"
+    },
+    "image_url": "https://via.placeholder.com/300/FFA500/FFFFFF?Text=Mandarin+Oriental+Ritz+Madrid",
+    "price_per_night": "500",
+    "rating": 4.7,
+    "features": [
+      "Central location",
+      "Fine dining",
+      "Wellness center",
+      "Historical architecture",
+      "Luxury suites"
+    ],
+    "phone": "+34 601 123 789",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "11981e30-c155-41f1-a377-41ec2736d6fd",
+    "name": "Finca Cortesín Hotel Golf & Spa",
+    "description": "An exclusive resort in Andalusia known for its world-class golf course, stunning architecture, and tranquil atmosphere.",
+    "location": {
+      "city": "Casares",
+      "country": "Spain"
+    },
+    "image_url": "https://via.placeholder.com/300/800080/FFFFFF?Text=Finca+Cortesin",
+    "price_per_night": "480",
+    "rating": 4.9,
+    "features": [
+      "Championship golf course",
+      "Luxury spa",
+      "Elegant design",
+      "Andalusian charm",
+      "Fine dining"
+    ],
+    "phone": "+34 655 222 111",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "ab66cb42-0d27-4e58-97dc-69feef6f0c71",
+    "name": "Hotel Único Madrid",
+    "description": "A stylish boutique hotel in Madrid's Salamanca district, housed in a beautifully restored 19th-century palace.",
+    "location": {
+      "city": "Madrid",
+      "country": "Spain"
+    },
+    "image_url": "https://via.placeholder.com/300/008000/FFFFFF?Text=Hotel+Unico+Madrid",
+    "price_per_night": "350",
+    "rating": 4.6,
+    "features": [
+      "Boutique style",
+      "Central location",
+      "Michelin-starred restaurant",
+      "Personalized service",
+      "Elegant rooms"
+    ],
+    "phone": "+34 687 456 321",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "ec8ef3ad-d0e1-4e01-905f-5a8c06357e91",
+    "name": "Mystique, a Luxury Collection Hotel, Santorini",
+    "description": "An iconic Santorini hotel carved into the volcanic cliffs, offering breathtaking sea views and private infinity pools.",
+    "location": {
+      "city": "Oia, Santorini",
+      "country": "Greece"
+    },
+    "image_url": "https://via.placeholder.com/300/00FF00/FFFFFF?Text=Mystique+Santorini",
+    "price_per_night": "700",
+    "rating": 4.9,
+    "features": [
+      "Infinity pools",
+      "Sea view",
+      "Gourmet dining",
+      "Spa services",
+      "Exclusive suites"
+    ],
+    "phone": "+30 690 321 8765",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "a719438a-4f42-4023-8b84-d2a352aaf16e",
+    "name": "Grace Santorini, Auberge Resorts Collection",
+    "description": "A luxurious boutique hotel in Imerovigli with minimalist design and stunning caldera views.",
+    "location": {
+      "city": "Imerovigli, Santorini",
+      "country": "Greece"
+    },
+    "image_url": "https://via.placeholder.com/300/00FFFF/000000?Text=Grace+Santorini",
+    "price_per_night": "650",
+    "rating": 4.9,
+    "features": [
+      "Caldera view",
+      "Infinity pool",
+      "Fine dining",
+      "Yoga classes",
+      "Personalized experiences"
+    ],
+    "phone": "+30 698 765 4321",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "efcb476e-bc93-493e-a88e-8eae6aa0e9a9",
+    "name": "Blue Palace, a Luxury Collection Resort and Spa, Crete",
+    "description": "An exquisite resort on the coast of Crete, offering private beaches, stunning sea views, and exceptional amenities.",
+    "location": {
+      "city": "Elounda, Crete",
+      "country": "Greece"
+    },
+    "image_url": "https://via.placeholder.com/300/ADD8E6/000000?Text=Blue+Palace+Crete",
+    "price_per_night": "420",
+    "rating": 4.8,
+    "features": [
+      "Private beach",
+      "Multiple pools",
+      "World-class spa",
+      "Water sports",
+      "Luxury bungalows"
+    ],
+    "phone": "+30 697 321 7890",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "759e3c89-7686-4d50-bd70-3173cf7e1693",
+    "name": "Four Seasons Astir Palace Hotel Athens",
+    "description": "A legendary hotel complex in Athens Riviera, offering luxurious accommodations, private beaches, and a range of dining options.",
+    "location": {
+      "city": "Vouliagmeni, Athens",
+      "country": "Greece"
+    },
+    "image_url": "https://via.placeholder.com/300/8B4513/FFFFFF?Text=Four+Seasons+Astir+Palace",
+    "price_per_night": "550",
+    "rating": 4.8,
+    "features": [
+      "Private beaches",
+      "Multiple pools",
+      "Extensive dining options",
+      "Spa",
+      "Waterfront location"
+    ],
+    "phone": "+30 699 123 4567",
+    "created_at": "2025-04-22T00:00:00Z"
+  },
+  {
+    "id": "249de32e-3572-46de-90e4-83d32e3f9b95",
+    "name": "Daios Cove Luxury Resort & Villas",
+    "description": "A secluded luxury resort in Crete with private villas and a stunning private beach in a picturesque cove.",
+    "location": {
+      "city": "Agios Nikolaos, Crete",
+      "country": "Greece"
+    },
+    "image_url": "https://via.placeholder.com/300/D2691E/FFFFFF?Text=Daios+Cove",
+    "price_per_night": "480",
+    "rating": 4.9,
+    "features": [
+      "Private beach",
+      "Villas with private pools",
+      "Spa",
+      "Water sports",
+      "Exceptional service"
+    ],
+    "phone": "+30 695 234 9876",
+    "created_at": "2025-04-22T00:00:00Z"
+  }
+]
