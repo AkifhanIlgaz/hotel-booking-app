@@ -15,15 +15,17 @@ func NewHotelHandler(hotelService *services.HotelService) *HotelHandler {
 	}
 }
 func (h *HotelHandler) Hotels(ctx *gin.Context) {
-	// Read filter,pagination, sort query params from request
+	hotels, err := h.hotelService.GetHotels()
+	if err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
-	// Get hotels from hotel service
-
-	// Return hotels as response
-	// c.JSON(http.StatusOK, hotels)
+	ctx.JSON(200, hotels)
 }
 
 func (h *HotelHandler) Hotel(ctx *gin.Context) {
+
 }
 
 func (h *HotelHandler) Search(ctx *gin.Context) {

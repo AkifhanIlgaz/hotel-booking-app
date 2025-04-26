@@ -18,6 +18,7 @@ func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler, hotelHand
 		r:              r,
 		authMiddleware: authMiddleware,
 		authHandler:    authHandler,
+		hotelHandler:   hotelHandler,
 	}
 }
 
@@ -46,7 +47,7 @@ func (m Manager) hotelRoutes() {
 	hotel := m.r.Group("/hotels")
 
 	{
-		hotel.GET("/", m.authMiddleware.AccessToken(), m.hotelHandler.Hotels)
+		hotel.GET("/", m.hotelHandler.Hotels)
 		hotel.GET("/:id", m.authMiddleware.AccessToken(), m.hotelHandler.Hotel)
 		hotel.GET("/search", m.authMiddleware.AccessToken(), m.hotelHandler.Search)
 	}
