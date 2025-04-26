@@ -25,6 +25,8 @@ func (h *HotelHandler) Hotels(ctx *gin.Context) {
 		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
 		return
 	}
+
+	params.Validate()
 	params.NormalizeFeatures()
 
 	ctx.JSON(200, params)

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"math"
 	"slices"
 	"strings"
 
@@ -27,16 +28,40 @@ type Location struct {
 
 type HotelFilterParams struct {
 	Page      int      `json:"page" form:"page"`
-	PageSize  int      `json:"pageSize" form:"pageSize"`
-	SortBy    string   `json:"sortBy" form:"sortBy"`
+	PageSize  int      `json:"pageSize" form:"pageSize" `
+	SortBy    string   `json:"sortBy" form:"sortBy" `
 	SortOrder string   `json:"sortOrder" form:"sortOrder"`
-	City      string   `json:"city" form:"city"`
+	City      string   `json:"city" form:"city" `
 	Country   string   `json:"country" form:"country"`
 	MinPrice  int      `json:"minPrice" form:"minPrice"`
 	MaxPrice  int      `json:"maxPrice" form:"maxPrice"`
 	MinRating float64  `json:"minRating" form:"minRating"`
 	Features  []string `json:"features" form:"features"`
 	Search    string   `json:"search" form:"search"`
+}
+
+// TODO: Create separate function to set defaults ?
+// TODO: return error
+func (p *HotelFilterParams) Validate() {
+	if p.Page <= 0 {
+		p.Page = 1
+	}
+
+	if p.PageSize <= 0 || p.PageSize >= 50 {
+		p.PageSize = 5
+	}
+
+	if p.SortBy == "" {
+		p.SortBy = "name"
+	}
+
+	if p.MinPrice < 0 {
+		p.MinPrice = 0
+	}
+
+	if p.MaxPrice == 0 {
+		p.MaxPrice = math.MaxInt
+	}
 }
 
 func (p *HotelFilterParams) NormalizeFeatures() {
