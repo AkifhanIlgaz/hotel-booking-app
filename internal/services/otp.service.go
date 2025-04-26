@@ -35,11 +35,11 @@ func (s *OTPService) GenerateOTP(email string) (string, error) {
 	expiresAt := now.Add(10 * time.Minute) // OTP expires in 10 minutes
 
 	_, err = s.db.Exec(queries.InsertOTPToken,
-		id,
-		email,
-		utils.Hash(otp),
-		expiresAt,
-		now,
+		sql.Named("id", id),
+		sql.Named("email", email),
+		sql.Named("token_hash", utils.Hash(otp)),
+		sql.Named("expires_at", expiresAt),
+		sql.Named("created_at", now),
 	)
 	if err != nil {
 		return "", fmt.Errorf("save otp token: %w", err)
@@ -52,7 +52,10 @@ func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 	var token models.OTPToken
 
 	// Then verify the OTP
-	err := s.db.QueryRow(queries.SelectOTPToken, email, utils.Hash(otp)).Scan(
+	err := s.db.QueryRow(queries.SelectOTPToken,
+		sql.Named("email", email),
+		sql.Named("token_hash", utils.Hash(otp)),
+	).Scan(
 		&token.Id,
 		&token.Email,
 		&token.TokenHash,
@@ -72,7 +75,7 @@ func (s *OTPService) VerifyOTP(email, otp string) (bool, error) {
 	}
 
 	// Delete the OTP after successful verification
-	_, err = s.db.Exec(queries.DeleteOTPToken, utils.Hash(otp))
+	_, err = s.db.Exec(queries.DeleteOTPToken, sql.Named("token_hash", token.TokenHash))
 	if err != nil {
 		return false, fmt.Errorf("delete otp: %w", err)
 	}

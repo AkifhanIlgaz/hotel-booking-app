@@ -11,7 +11,7 @@ import (
 func Connect(psqlConfig config.PostgresConfig) (*sql.DB, error) {
 	connString := generateConnString(psqlConfig)
 
-	db, err := sql.Open("postgres", connString)
+	db, err := sql.Open("sqlserver", connString)
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +32,26 @@ func Connect(psqlConfig config.PostgresConfig) (*sql.DB, error) {
 }
 
 func generateConnString(psqlConfig config.PostgresConfig) string {
-	connString := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		psqlConfig.Host, psqlConfig.Port, psqlConfig.User, psqlConfig.Password, psqlConfig.DBName)
+	// connString := fmt.Sprintf("host=%s port=%d user=%s "+
+	// 	"password=%s dbname=%s sslmode=disable",
+	// 	psqlConfig.Host, psqlConfig.Port, psqlConfig.User, psqlConfig.Password, psqlConfig.DBName)
 
+	type DBConfig struct {
+		Server   string
+		Port     string
+		User     string
+		Password string
+		Database string
+	}
+
+	config := &DBConfig{
+		Server:   `localhost`,
+		Port:     "1433",
+		User:     "sa",
+		Password: "Zozaktestnet2642",
+		Database: "master",
+	}
+
+	connString := fmt.Sprintf("server=%s;port=%s;user id=%s;password=%s;database=%s", config.Server, config.Port, config.User, config.Password, config.Database)
 	return connString
 }

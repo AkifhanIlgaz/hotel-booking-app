@@ -16,7 +16,7 @@ import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	_ "github.com/microsoft/go-mssqldb"
 )
 
 func main() {

@@ -212,14 +212,18 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 	var execErr error
 	if errors.Is(err, sql.ErrNoRows) {
 		_, execErr = m.db.Exec(queries.InsertRefreshToken,
-			id,
-			uid,
-			utils.Hash(token),
-			now,
-			expiry,
+			sql.Named("id", id),
+			sql.Named("user_id", uid),
+			sql.Named("token_hash", utils.Hash(token)),
+			sql.Named("created_at", now),
+			sql.Named("expires_at", expiry),
 		)
 	} else {
-		_, execErr = m.db.Exec(queries.UpdateRefreshToken, utils.Hash(token), now, expiry, uid)
+		_, execErr = m.db.Exec(queries.UpdateRefreshToken,
+			sql.Named("token_hash", utils.Hash(token)),
+			sql.Named("created_at", now),
+			sql.Named("expires_at", expiry),
+			sql.Named("user_id", uid))
 	}
 
 	if execErr != nil {
@@ -232,7 +236,7 @@ func (m *Manager) GenerateRefreshToken(uid uuid.UUID) (string, error) {
 func (m *Manager) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
 	var token models.RefreshToken
 
-	err := m.db.QueryRow(queries.SelectRefreshToken, utils.Hash(refreshToken)).Scan(&token.Id, &token.UserId, &token.TokenHash, &token.ExpiresAt, &token.CreatedAt)
+	err := m.db.QueryRow(queries.SelectRefreshToken, sql.Named("token_hash", utils.Hash(refreshToken))).Scan(&token.Id, &token.UserId, &token.TokenHash, &token.ExpiresAt, &token.CreatedAt)
 	if err != nil {
 		// Todo: if sql.ErrNoRows return custom error
 		return uuid.Nil, fmt.Errorf("check refresh token is expired: %w", err)
@@ -246,7 +250,7 @@ func (m *Manager) ValidateRefreshToken(refreshToken string) (uuid.UUID, error) {
 }
 
 func (m *Manager) DeleteRefreshToken(uid uuid.UUID) error {
-	res, err := m.db.Exec(queries.DeleteRefreshToken, uid)
+	res, err := m.db.Exec(queries.DeleteRefreshToken, sql.Named("user_id", uid))
 	if err != nil {
 		return fmt.Errorf("error deleting refresh token: %w", err)
 	}
@@ -266,7 +270,7 @@ func (m *Manager) DeleteRefreshToken(uid uuid.UUID) error {
 func (m *Manager) isRefreshTokenExpired(uid uuid.UUID) (bool, error) {
 	var expiry time.Time
 
-	err := m.db.QueryRow(queries.ExpiryCheck, uid).Scan(&expiry)
+	err := m.db.QueryRow(queries.ExpiryCheck, sql.Named("user_id", uid)).Scan(&expiry)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil

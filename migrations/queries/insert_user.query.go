@@ -1,19 +1,21 @@
 package queries
 
 const InsertUser = `
-	INSERT INTO users (id, name, email, password_hash, role, created_at)
-		VALUES (
-			$1,
-			$2,
-			$3,
-			$4,
-			$5,
-			$6
+		INSERT INTO users (
+			id,
+			name,
+			email,
+			password_hash,
+			role,
+			created_at
 		)
+		VALUES (
+			@id, @name, @email, @password_hash, @role, @created_at
+		);
 `
 
 const UpdateUserPasswordByEmail = `
 	UPDATE users
-	SET password_hash = $1
-	WHERE email = $2;
+	SET password_hash = @password_hash
+	WHERE email = @email;
 `

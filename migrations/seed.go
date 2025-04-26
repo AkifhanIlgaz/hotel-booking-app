@@ -39,7 +39,19 @@ func addHotels(db *sql.DB) error {
 	}
 
 	for _, hotel := range hotels {
-		_, err := db.Exec(queries.InsertHotelQuery, hotel.Id, hotel.Name, hotel.Description, hotel.Location.City, hotel.Location.Country, hotel.ImageUrl, hotel.PricePerNight, hotel.Rating, hotel.PhoneNumber, strings.Join(hotel.Features, ","), hotel.CreatedAt)
+		_, err = db.Exec(queries.InsertHotelQuery,
+			sql.Named("id", hotel.Id),
+			sql.Named("name", hotel.Name),
+			sql.Named("description", hotel.Description),
+			sql.Named("city", hotel.Location.City),
+			sql.Named("country", hotel.Location.Country),
+			sql.Named("image_url", hotel.ImageUrl),
+			sql.Named("price_per_night", hotel.PricePerNight),
+			sql.Named("rating", hotel.Rating),
+			sql.Named("phone_number", hotel.PhoneNumber),
+			sql.Named("features", strings.Join(hotel.Features, ",")),
+			sql.Named("created_at", hotel.CreatedAt),
+		)
 		if err != nil {
 			return fmt.Errorf("failed to insert hotel: %w", err)
 		}
