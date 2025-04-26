@@ -1,7 +1,12 @@
 package handlers
 
 import (
+	"net/http"
+
+	"github.com/AkifhanIlgaz/hotel-booking-app/internal/models"
 	"github.com/AkifhanIlgaz/hotel-booking-app/internal/services"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/messages"
+	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,13 +20,14 @@ func NewHotelHandler(hotelService *services.HotelService) *HotelHandler {
 	}
 }
 func (h *HotelHandler) Hotels(ctx *gin.Context) {
-	hotels, err := h.hotelService.GetHotels()
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+	var params models.HotelFilterParams
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		response.WithError(ctx, http.StatusBadRequest, messages.InvalidJSONOrMissingFields, err)
 		return
 	}
+	params.NormalizeFeatures()
 
-	ctx.JSON(200, hotels)
+	ctx.JSON(200, params)
 }
 
 func (h *HotelHandler) Hotel(ctx *gin.Context) {

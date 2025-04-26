@@ -1,6 +1,11 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"slices"
+	"strings"
+
+	"github.com/google/uuid"
+)
 
 type Hotel struct {
 	Id            uuid.UUID `json:"id" `
@@ -18,4 +23,36 @@ type Hotel struct {
 type Location struct {
 	City    string `json:"city"`
 	Country string `json:"country"`
+}
+
+type HotelFilterParams struct {
+	Page      int      `json:"page" form:"page"`
+	PageSize  int      `json:"pageSize" form:"pageSize"`
+	SortBy    string   `json:"sortBy" form:"sortBy"`
+	SortOrder string   `json:"sortOrder" form:"sortOrder"`
+	City      string   `json:"city" form:"city"`
+	Country   string   `json:"country" form:"country"`
+	MinPrice  int      `json:"minPrice" form:"minPrice"`
+	MaxPrice  int      `json:"maxPrice" form:"maxPrice"`
+	MinRating float64  `json:"minRating" form:"minRating"`
+	Features  []string `json:"features" form:"features"`
+	Search    string   `json:"search" form:"search"`
+}
+
+func (p *HotelFilterParams) NormalizeFeatures() {
+	concatenatedFeatures := strings.Join(slices.Concat(p.Features), ",")
+	p.Features = strings.Split(concatenatedFeatures, ",")
+
+	uniqueFeatures := make(map[string]struct{})
+	for _, f := range p.Features {
+		cleaned := strings.ToLower(strings.TrimSpace(f))
+		if cleaned != "" {
+			uniqueFeatures[cleaned] = struct{}{}
+		}
+	}
+
+	p.Features = make([]string, 0, len(uniqueFeatures))
+	for feature := range uniqueFeatures {
+		p.Features = append(p.Features, feature)
+	}
 }
