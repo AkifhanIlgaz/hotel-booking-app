@@ -79,6 +79,7 @@ func BuildHotelsQueryWithParams(params models.HotelFilterParams) string {
 
 func (qb *QueryBuilder) buildOrderByClause(sortBy, sortOrder string) {
 	sortBy = utils.CamelToSnakeCase(sortBy)
+
 	qb.WriteString(fmt.Sprintf("ORDER BY %v %v ", sortBy, sortOrder))
 }
 
@@ -153,10 +154,6 @@ INSERT INTO hotels (
 		);
 `
 
-const SelectAllHotelsQuery = `
-SELECT * FROM hotels;
-`
-
-const SelectHotelByIdQuery = `
+const SelectHotelById = `
 SELECT * FROM hotels WHERE id = @id;
 `

@@ -48,7 +48,6 @@ func (m Manager) hotelRoutes() {
 
 	{
 		hotel.GET("/", m.hotelHandler.Hotels)
-		hotel.GET("/:id", m.authMiddleware.AccessToken(), m.hotelHandler.Hotel)
-		hotel.GET("/search", m.authMiddleware.AccessToken(), m.hotelHandler.Search)
+		hotel.GET("/:id", m.hotelHandler.Hotel)
 	}
 }

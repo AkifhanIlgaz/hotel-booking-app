@@ -29,12 +29,27 @@ func (h *HotelHandler) Hotels(ctx *gin.Context) {
 	params.Validate()
 	params.NormalizeFeatures()
 
-	ctx.JSON(200, params)
+	hotels, err := h.hotelService.GetHotels(params)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
+
+	response.WithSuccess(ctx, http.StatusOK, "", gin.H{
+		"hotels": hotels,
+	})
 }
 
 func (h *HotelHandler) Hotel(ctx *gin.Context) {
+	hotelId := ctx.Param("id")
 
-}
+	hotel, err := h.hotelService.GetHotelById(hotelId)
+	if err != nil {
+		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
+		return
+	}
 
-func (h *HotelHandler) Search(ctx *gin.Context) {
+	response.WithSuccess(ctx, http.StatusOK, "", gin.H{
+		"hotel": hotel,
+	})
 }

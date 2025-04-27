@@ -19,10 +19,10 @@ func NewHotelService(db *sql.DB) *HotelService {
 	}
 }
 
-// Todo: Implement
-func (hs *HotelService) GetHotels() ([]models.Hotel, error) {
+func (hs *HotelService) GetHotels(params models.HotelFilterParams) ([]models.Hotel, error) {
+	query := queries.BuildHotelsQueryWithParams(params)
 
-	rows, err := hs.db.Query(queries.SelectAllHotelsQuery)
+	rows, err := hs.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hotels: %w", err)
 	}
@@ -56,8 +56,32 @@ func (hs *HotelService) GetHotels() ([]models.Hotel, error) {
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("query galleries by user id: %w", err)
+		return nil, fmt.Errorf("get all hotels with filter: %w", err)
 	}
 
 	return hotels, nil
+}
+
+func (hs *HotelService) GetHotelById(hotelId string) (models.Hotel, error) {
+	var hotel models.Hotel
+	var features string
+
+	err := hs.db.QueryRow(queries.SelectHotelById, sql.Named("id", hotelId)).Scan(&hotel.Id,
+		&hotel.Name,
+		&hotel.Description,
+		&hotel.Location.City,
+		&hotel.Location.Country,
+		&hotel.ImageUrl,
+		&hotel.PricePerNight,
+		&hotel.Rating,
+		&hotel.PhoneNumber,
+		&features,
+		&hotel.CreatedAt)
+	if err != nil {
+		return models.Hotel{}, fmt.Errorf("get hotel by id: %w", err)
+	}
+
+	hotel.Features = strings.Split(features, ",")
+
+	return hotel, nil
 }

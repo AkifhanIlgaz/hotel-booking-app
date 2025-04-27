@@ -40,8 +40,6 @@ type HotelFilterParams struct {
 	Search    string   `json:"search" form:"search"`
 }
 
-// TODO: Create separate function to set defaults ?
-// TODO: return error
 func (p *HotelFilterParams) Validate() {
 	if p.Page <= 0 {
 		p.Page = 1
