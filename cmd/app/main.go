@@ -16,7 +16,7 @@ import (
 	"github.com/AkifhanIlgaz/hotel-booking-app/pkg/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	_ "github.com/microsoft/go-mssqldb"
 )
 
 func main() {
@@ -55,11 +55,13 @@ func main() {
 
 	userService := services.NewUserService(db)
 	otpService := services.NewOTPService(db)
+	hotelService := services.NewHotelService(db)
 
 	authHandler := handlers.NewAuthHandler(userService, otpService, tokenManager, mailManager)
+	hotelHandler := handlers.NewHotelHandler(hotelService)
 	authMiddleware := middlewares.NewAuthMiddleware(tokenManager)
 
-	routeManager := routes.NewManager(router, authHandler, authMiddleware)
+	routeManager := routes.NewManager(router, authHandler, hotelHandler, authMiddleware)
 
 	routeManager.SetupRoutes()
 

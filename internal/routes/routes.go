@@ -10,21 +10,24 @@ type Manager struct {
 	r              *gin.RouterGroup
 	authMiddleware *middlewares.AuthMiddleware
 	authHandler    *handlers.AuthHandler
+	hotelHandler   *handlers.HotelHandler
 }
 
-func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler, authMiddleware *middlewares.AuthMiddleware) *Manager {
+func NewManager(r *gin.RouterGroup, authHandler *handlers.AuthHandler, hotelHandler *handlers.HotelHandler, authMiddleware *middlewares.AuthMiddleware) *Manager {
 	return &Manager{
 		r:              r,
 		authMiddleware: authMiddleware,
 		authHandler:    authHandler,
+		hotelHandler:   hotelHandler,
 	}
 }
 
 func (m *Manager) SetupRoutes() {
-	m.userRoutes()
+	m.authRoutes()
+	m.hotelRoutes()
 }
 
-func (m Manager) userRoutes() {
+func (m Manager) authRoutes() {
 	auth := m.r.Group("/auth")
 	{
 		auth.POST("/login", m.authHandler.Login)
@@ -37,5 +40,14 @@ func (m Manager) userRoutes() {
 		auth.POST("/verify-otp", m.authHandler.VerifyOTP)
 
 		auth.GET("/test", m.authMiddleware.AccessToken())
+	}
+}
+
+func (m Manager) hotelRoutes() {
+	hotel := m.r.Group("/hotels")
+
+	{
+		hotel.GET("/", m.hotelHandler.Hotels)
+		hotel.GET("/:id", m.hotelHandler.Hotel)
 	}
 }

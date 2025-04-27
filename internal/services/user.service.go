@@ -34,12 +34,12 @@ func (us *UserService) RegisterUser(registrationReq models.RegistrationRequest) 
 	id := uuid.New()
 
 	if _, err := us.db.Exec(queries.InsertUser,
-		id,
-		registrationReq.Name,
-		registrationReq.Email,
-		hashedPassword,
-		models.RoleUser,
-		time.Now()); err != nil {
+		sql.Named("id", id),
+		sql.Named("name", registrationReq.Name),
+		sql.Named("email", registrationReq.Email),
+		sql.Named("password_hash", hashedPassword),
+		sql.Named("role", models.RoleUser),
+		sql.Named("created_at", time.Now())); err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) {
 			if pgError.Code == pgerrcode.UniqueViolation {
@@ -55,7 +55,7 @@ func (us *UserService) RegisterUser(registrationReq models.RegistrationRequest) 
 func (us *UserService) AuthenticateUser(loginReq models.LoginRequest) (*models.User, error) {
 	var user models.User
 
-	if err := us.db.QueryRow(queries.SelectUserByEmail, loginReq.Email).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
+	if err := us.db.QueryRow(queries.SelectUserByEmail, sql.Named("email", loginReq.Email)).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.ErrUserNotFound
 		}
@@ -73,7 +73,7 @@ func (us *UserService) AuthenticateUser(loginReq models.LoginRequest) (*models.U
 func (us *UserService) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 
-	if err := us.db.QueryRow(queries.SelectUserByEmail, email).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
+	if err := us.db.QueryRow(queries.SelectUserByEmail, sql.Named("email", email)).Scan(&user.Id, &user.Name, &user.Email, &user.PasswordHash, &user.Role, &user.CreatedAt); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.ErrUserNotFound
 		}
@@ -89,7 +89,9 @@ func (us *UserService) UpdatePassword(email, password string) error {
 		return fmt.Errorf("hash password: %w", err)
 	}
 
-	if _, err := us.db.Exec(queries.UpdateUserPasswordByEmail, hashedPassword, email); err != nil {
+	if _, err := us.db.Exec(queries.UpdateUserPasswordByEmail,
+		sql.Named("password_hash", hashedPassword),
+		sql.Named("email", email)); err != nil {
 		return fmt.Errorf("update user password: %w", err)
 	}
 
