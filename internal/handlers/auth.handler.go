@@ -1,3 +1,4 @@
+
 package handlers
 
 import (
@@ -30,6 +31,18 @@ func NewAuthHandler(userService *services.UserService, otpService *services.OTPS
 	}
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  register a new user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.RegistrationRequest  true  "Registration Request"
+// @Success      201  {object}  response.SuccessResponse{data=models.Tokens}
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      409  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(ctx *gin.Context) {
 	var req models.RegistrationRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -84,6 +97,19 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 
 }
 
+// Login godoc
+// @Summary      Login a user
+// @Description  login a user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.LoginRequest  true  "Login Request"
+// @Success      200  {object}  response.SuccessResponse{data=models.Tokens}
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(ctx *gin.Context) {
 	var req models.LoginRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -138,6 +164,18 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 
 }
 
+// Refresh godoc
+// @Summary      Refresh tokens
+// @Description  refresh tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.RefreshRequest  true  "Refresh Request"
+// @Success      200  {object}  response.SuccessResponse{data=models.Tokens}
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /auth/refresh [post]
 func (h *AuthHandler) Refresh(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -168,6 +206,7 @@ func (h *AuthHandler) Refresh(ctx *gin.Context) {
 			return
 		}
 	}
+
 	accessToken, err := h.tokenManager.GenerateAccessToken(uid.String(), "user")
 	if err != nil {
 		response.WithError(ctx, http.StatusInternalServerError, messages.SomethingWentWrong, err)
@@ -187,6 +226,18 @@ func (h *AuthHandler) Refresh(ctx *gin.Context) {
 
 }
 
+// Logout godoc
+// @Summary      Logout a user
+// @Description  logout a user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.RefreshRequest  true  "Refresh Request"
+// @Success      200  {object}  response.SuccessResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Router       /auth/logout [post]
 func (h *AuthHandler) Logout(ctx *gin.Context) {
 	var req models.RefreshRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -229,6 +280,18 @@ func (h *AuthHandler) Logout(ctx *gin.Context) {
 	response.WithSuccess(ctx, http.StatusOK, messages.SuccessfullyLoggedOut, nil)
 }
 
+// ForgotPassword godoc
+// @Summary      Forgot password
+// @Description  forgot password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.OTPRequest  true  "OTP Request"
+// @Success      200  {object}  response.SuccessResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /auth/forgot-password [post]
 func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {
 	var req models.OTPRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -280,6 +343,19 @@ func (h *AuthHandler) ForgotPassword(ctx *gin.Context) {
 	response.WithSuccess(ctx, http.StatusOK, messages.SentOTPCode, nil)
 }
 
+// VerifyOTP godoc
+// @Summary      Verify OTP
+// @Description  verify otp
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.OTPVerificationRequest  true  "OTP Verification Request"
+// @Success      200  {object}  response.SuccessResponse{data=models.ResetToken}
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Failure      404  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /auth/verify-otp [post]
 func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
 	var req models.OTPVerificationRequest
 	if err := ctx.BindJSON(&req); err != nil {
@@ -343,6 +419,17 @@ func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
 	})
 }
 
+// ChangePassword godoc
+// @Summary      Change password
+// @Description  change password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.ChangePasswordRequest  true  "Change Password Request"
+// @Success      200  {object}  response.SuccessResponse
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      401  {object}  response.ErrorResponse
+// @Router       /auth/change-password [post]
 func (h *AuthHandler) ChangePassword(ctx *gin.Context) {
 	var req models.ChangePasswordRequest
 	if err := ctx.BindJSON(&req); err != nil {

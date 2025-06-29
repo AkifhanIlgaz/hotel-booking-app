@@ -1,3 +1,4 @@
+
 package handlers
 
 import (
@@ -19,6 +20,25 @@ func NewHotelHandler(hotelService *services.HotelService) *HotelHandler {
 		hotelService: hotelService,
 	}
 }
+
+// Hotels godoc
+// @Summary      Get hotels
+// @Description  get hotels
+// @Tags         hotels
+// @Accept       json
+// @Produce      json
+// @Param        name query string false "name of the hotel"
+// @Param        location query string false "location of the hotel"
+// @Param        min_price query int false "minimum price of the hotel"
+// @Param        max_price query int false "maximum price of the hotel"
+// @Param        rating query int false "rating of the hotel"
+// @Param        features query string false "features of the hotel"
+// @Param        page query int false "page number"
+// @Param        limit query int false "limit of the hotels"
+// @Success      200  {object}  response.SuccessResponse{data=models.PaginatedHotels}
+// @Failure      400  {object}  response.ErrorResponse
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /hotels [get]
 func (h *HotelHandler) Hotels(ctx *gin.Context) {
 	var params models.HotelFilterParams
 	if err := ctx.ShouldBindQuery(&params); err != nil {
@@ -40,6 +60,16 @@ func (h *HotelHandler) Hotels(ctx *gin.Context) {
 	})
 }
 
+// Hotel godoc
+// @Summary      Get a hotel
+// @Description  get a hotel by id
+// @Tags         hotels
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Hotel ID"
+// @Success      200  {object}  response.SuccessResponse{data=models.Hotel}
+// @Failure      500  {object}  response.ErrorResponse
+// @Router       /hotels/{id} [get]
 func (h *HotelHandler) Hotel(ctx *gin.Context) {
 	hotelId := ctx.Param("id")
 
